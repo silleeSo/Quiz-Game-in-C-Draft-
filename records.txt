@@ -1,0 +1,7 @@
+Emotions
+1
+How are you?
+Happy
+Angry
+Sad
+Sad
