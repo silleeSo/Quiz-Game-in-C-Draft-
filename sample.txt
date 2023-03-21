@@ -5,6 +5,7 @@ Vanuatu
 Bermuda
 Croatia
 Bermuda
+
 Technology
 1
 What is the part of the database that holds one type of information?
@@ -12,10 +13,3 @@ Report
 File
 Field
 Field
-Geography
-2
-What is this country?
-America
-Philippines
-China
-Philippines
