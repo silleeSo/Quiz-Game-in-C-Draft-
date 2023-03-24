@@ -37,6 +37,8 @@ void printInFile(struct questionFormat *A, int s, FILE *fp){
     fclose(fp);
 }
 
+//QUERIES
+//checking if answer is actually in choices?
 int addRecord(struct questionFormat *A, int s){
    
     //start from index after last element, add records (quantity s)
@@ -59,7 +61,7 @@ int addRecord(struct questionFormat *A, int s){
         //gets(A[s].answer);
         //add checking pa sa add record
         if (exists == 1) //if record exists, print message and end function, getting back to manage data
-            printf("Record already exists!\n");
+            printf("\nRecord already exists!\n");
         else { //if it does not exist: 
             strcpy(A[s].question, question); //get the needed information
             strcpy(A[s].answer, answer);
@@ -165,17 +167,10 @@ int importData(struct questionFormat *A, int s, FILE *fp){
 KULANG: 
 1. proper password implementation
 2. Other cases
-*/
-void manageData (string30 password,  questionFormat A[], int *s, FILE *fp){
-    string30 strInput;
-    int nInput = 0;
-   int i =0;
-   char ch;
-    scanf("%c", strInput);
-    do{
-        printf("Enter the password: ");
-       gets(strInput);
-    /*
+Queries:
+1. need ba input validation for floats???
+FOR PASSWORD MASK
+/*
     METHOD 1 (DOESNT WORK):
         do{
             //scanf("%c", &ch);
@@ -199,36 +194,240 @@ void manageData (string30 password,  questionFormat A[], int *s, FILE *fp){
     }
     while(strInput[i-1]!='\r');
     strInput[i-1]='\0';*/
+
+//QUERIES
+//if no record paano?? display warning?
+//ADD VALIDATION NA PAG INPUT IF ZERO KASO FIRST CYCLE PALANG NAMAN
+// ADD VALIDATION IF NO RECORDS TAS U TRY TO EDIT
+void editRecord(struct questionFormat *A, int s){
+    //create array of topics
+    string20 topics[s];
+    string20 selectedTopic;                                     //index of the selected question in the array 
+    int ctrTopics, exists, arrayTopicsSize, nInput, selectedIndex; //counter for topics array
+    int loopCtr = 0;
+
+    do{
+        ctrTopics = 0, exists = 0, arrayTopicsSize = 0, selectedIndex = 0; //reset variables
+    for (int i = 0; i < s; i++){
+        for (int j = 0; j < ctrTopics; j++)
+            if (!strcmp(A[i].topic, topics[j])) // check if exists na ung topic of current ques in topics array
+                exists = 1;
+        if (!exists) {//IF WALA PA, ADD TO ARRAY
+            strcpy(topics[ctrTopics], A[i].topic); // add to array of topics
+            ctrTopics++;
+
+        }
+
+        exists = 0; //reset flag variable
+    }//end of atopics array creation
+    //ctrTopics = size of topics array
+    
+    //if one edit has already been made, add new option to go back to manage menu
+        if (loopCtr > 0)
+            printf("0 - Go back to main menu\n");
+
+        printf("Select a Topic: \n");
+        //display topics
+        for (int i = 0; i < ctrTopics; i++)
+            printf("%d - %s\n", i+1, topics[i]);
         
-    }while(strcmp(password, strInput)!= 0);
-     do{
-    printf("\nMANAGE DATA MENU\n");
-    printf("1: Add a record\n");
-    printf("2: Edit a record\n");
-    printf("3: Delete a record\n");
-    printf("4: Import data\n");
-    printf("5: Export data\n");
-    printf("6: Go back to main menu\n");
-    scanf("%d", &nInput);
-    while (nInput < 1 || nInput > 6) {
-        printf("Invalid input, try again: ");
-        scanf("%d", &nInput);  
-    }
-            //need ba input validation for floats???
-   
+        scanf("%d", &nInput);
+
+        //ADD VALIDATION NA PAG INPUT IF ZERO KASO FIRST CYCLE PALANG NAMAN
+        if (nInput != 0){
+        strcpy(selectedTopic, topics[nInput-1]); //-1 since index starts at 0, input starts at 1 lowest
+        //if no records paano??
+       
+        //display questions - WORKS!
+        printf("Enter a question number: \n");
+        for (int i = 0; i < s; i++){
+            if (!strcmp(A[i].topic, selectedTopic))
+
+                printf("Question %d - %s\n", A[i].questionNum , A[i].question);
+        }
+        //take question index in 1d array
+         scanf("%d", &nInput);
+        while (A[selectedIndex].questionNum != nInput || strcmp(A[selectedIndex].topic, selectedTopic) != 0)
+            selectedIndex++;
+        printf("Which field would you like to edit?\n1 - Topic\n2 - Question\n3 - choice 1\n4 - choice 2\n5 - choice 3\n6 - answer\n");
+        scanf("%d", &nInput);
+        printf("Input the new content of question %d ", A[selectedIndex].questionNum);
         switch (nInput)
         {
-            case 1: *s = addRecord(A, *s); printInFile(A, *s, fp);  break; //REMOVE PRINT AFTER, ONLY FOR TTEST
-            case 2:  break;
-            case 3: break;
-            case 4: *s = importData(A, *s, fp); break;
-            case 5: break;
+        case 1: 
+            printf("topic: ");
+            gets(A[selectedIndex].topic);
+            gets(A[selectedIndex].topic);
+            break;
+        case 2: 
+            printf("question: ");
+            gets(A[selectedIndex].question);
+            gets(A[selectedIndex].question);
+            break;
+        case 3: 
+            printf("choice 1: ");
+            gets(A[selectedIndex].choice1);
+            gets(A[selectedIndex].choice1);
+            break;
+        case 4: 
+            printf("choice 2: ");
+            gets(A[selectedIndex].choice2);
+            gets(A[selectedIndex].choice2);
+            break;
+        case 5: 
+            printf("choice 3: ");
+            gets(A[selectedIndex].choice3);
+            gets(A[selectedIndex].choice3);
+            break;
+        case 6: 
+            printf("answer: ");
+            gets(A[selectedIndex].answer);
+            gets(A[selectedIndex].answer);
+            break;
+        default:
+            break;
+        }
+        //printf("Question %d ", A[selectedIndex].questionNum , A[selectedIndex].question);
+        printf("\nRecord edited successfully!\n");
+        loopCtr ++;}
+    } while (nInput!=0);
+       
+     
+}//TO ADD: INPUT VALIDATION FOR EVERY QUESTION
 
-    }
+int deleteRecord(struct questionFormat *A, int s){
+    //create array of topics
+    string20 topics[s];
+    string20 selectedTopic;                                     //index of the selected question in the array 
+    int ctrTopics, exists, arrayTopicsSize, nInput, selectedIndex; //counter for topics array
+    int loopCtr = 0, currQuesNum =0;
 
-    } while (nInput != 6);
+    do{
+        ctrTopics = 0, exists = 0, arrayTopicsSize = 0, selectedIndex = 0; //reset variables
+    for (int i = 0; i < s; i++){
+        for (int j = 0; j < ctrTopics; j++)
+            if (!strcmp(A[i].topic, topics[j])) // check if exists na ung topic of current ques in topics array
+                exists = 1;
+        if (!exists) {//IF WALA PA, ADD TO ARRAY
+            strcpy(topics[ctrTopics], A[i].topic); // add to array of topics
+            ctrTopics++;
+
+        }
+
+        exists = 0; //reset flag variable
+    }//end of atopics array creation
+    //ctrTopics = size of topics array
+
+        printf("Select a Topic: \n");
+        //display topics
+        for (int i = 0; i < ctrTopics; i++)
+            printf("%d - %s\n", i+1, topics[i]);
+        
+        scanf("%d", &nInput);
+
+        //ADD VALIDATION NA PAG INPUT IF ZERO KASO FIRST CYCLE PALANG NAMAN
+        
+        strcpy(selectedTopic, topics[nInput-1]); //-1 since index starts at 0, input starts at 1 lowest
+        //if no records paano??
+       
+        //display questions - WORKS!
+        printf("Enter a question number: \n");
+        for (int i = 0; i < s; i++){
+            if (!strcmp(A[i].topic, selectedTopic))
+
+                printf("Question %d - %s\n", A[i].questionNum , A[i].question);
+        }
+     
+         scanf("%d", &nInput);
+        while (A[selectedIndex].questionNum != nInput || strcmp(A[selectedIndex].topic, selectedTopic) != 0)   //take question index in 1d array
+            selectedIndex++;
+            //UP TO HERE SAME W EDIT !!!
+        //at this point, nInput is still = ques num
+        printf("Are you sure you want to delete question number %d of %s?\n0 - No\n1 - Yes\n", nInput, selectedTopic);
+        scanf("%d", &nInput);
+        //if yes and no
+        int  j = selectedIndex;
+        if (nInput){
+            //overwrite data
+            //change size
+            //change q num
+            //loop start from selected index (index of item to delete)
+
+            currQuesNum = A[selectedIndex].questionNum;
+            for (int i = selectedIndex + 1; i <s; i++){
+                //CHANGE Q NUM OF ITEMS AFTER THE SELECTED
+                if (!strcmp(A[selectedIndex].topic, A[i].topic)){
+                    A[i].questionNum = currQuesNum;
+                    currQuesNum++;
+                }
+            }
+            for (int i = selectedIndex+1; i < s; i++)
+                     A[i] = A[i+1]; 
+                   
+                    s--;
+                 
+                printf("\n Record deleted successfully!\n\n1 - Delete another record\n2 - Go back to manage data menu\n");
+                scanf("%d", &nInput);
+
+             //automatically set the question number:
+           
+                    //jump edit, not continuous
+                    //get index of next elemetn w same topic
+
+            }
+           
+
+        }while (nInput == 1);
+        return s;
+}
+
+void manageData (string30 password,  questionFormat A[], int *s, FILE *fp){
+    //declare variables
+    string30 strInput;
+    int nInput = 0;
+    int i =0;
+    char ch;
+
+    scanf("%c", strInput); // get initial password input
+    printf("Enter the password: ");
+    gets(strInput);
+
+    while(strcmp(password, strInput)!= 0 && nInput == 0){ //test if password is not the same, nInput = 0 means that user wants to try again
+        printf("Incorrect Password\n0 - Try again\n1 - Go back to main menu\n");
+        scanf("%d", &nInput);
+        if (nInput == 0){
+            printf("Enter the password: ");
+            gets(strInput);
+        }
+        gets(strInput);
+     }
+    if ( nInput == 0){ // if the the nInput remains as 0 (use tried again/ user did not pick to go back)
+        do{ //while the user doesnt choose to go back to main menu from manage data menu
+            printf("\nMANAGE DATA MENU\n"); // display menu list
+            printf("1: Add a record\n");
+            printf("2: Edit a record\n");
+            printf("3: Delete a record\n");
+            printf("4: Import data\n");
+            printf("5: Export data\n");
+            printf("6: Go back to main menu\n");
+            scanf("%d", &nInput);
+            while (nInput < 1 || nInput > 6) { //input validation
+                printf("Invalid input, try again: ");
+                scanf("%d", &nInput);  
+            }
+   
+            switch (nInput) //switch case for user input from manage data
+            {
+                case 1: *s = addRecord(A, *s); printInFile(A, *s, fp);  break; //REMOVE PRINT AFTER, ONLY FOR TTEST
+                case 2:   editRecord(A, *s); break;// to add 2, 3, 5
+                case 3: *s = deleteRecord(A, *s); printInFile(A, *s, fp);  break;
+                case 4: *s = importData(A, *s, fp); break;
+                case 5: break;
+            }
+
+        } while (nInput != 6);
     
-
+    }
 
 }
 void playGame (){

@@ -12,10 +12,3 @@ Report
 File
 Field
 Field
-Geography
-2
-What is this country?
-America
-Philippines
-China
-Philippines
