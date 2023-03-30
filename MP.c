@@ -163,6 +163,25 @@ int importData(struct questionFormat *A, int s, FILE *fp){
         printf("\nData imported successfully!\n");
         return s;
 }
+
+void exportData(struct questionFormat *A, int s, FILE *fp){
+
+     string30 fileName;
+    printf("Import file name (txt) to export to: ");
+    scanf("%s", fileName);
+    fp = fopen(fileName, "w");
+    for(int i = 0; i < s; i++){
+        fprintf(fp, "%s\n", A[i].topic);
+        fprintf(fp, "%d\n", A[i].questionNum);
+        fprintf(fp, "%s\n", A[i].question);
+        fprintf(fp, "%s\n", A[i].choice1);
+        fprintf(fp, "%s\n", A[i].choice2);
+        fprintf(fp, "%s\n", A[i].choice3);
+        fprintf(fp, "%s\n\n", A[i].answer);
+    }
+    fclose(fp);
+    printf("\nData exported successfully!\n");
+}
 /*
 KULANG: 
 1. proper password implementation
@@ -288,7 +307,7 @@ void editRecord(struct questionFormat *A, int s){
             break;
         }
         //printf("Question %d ", A[selectedIndex].questionNum , A[selectedIndex].question);
-        printf("\nRecord edited successfully!\n");
+        printf("\nRecord edited successfully!\n\n");
         loopCtr ++;}
     } while (nInput!=0);
        
@@ -418,11 +437,11 @@ void manageData (string30 password,  questionFormat A[], int *s, FILE *fp){
    
             switch (nInput) //switch case for user input from manage data
             {
-                case 1: *s = addRecord(A, *s); printInFile(A, *s, fp);  break; //REMOVE PRINT AFTER, ONLY FOR TTEST
+                case 1: *s = addRecord(A, *s);   break; //REMOVE PRINT AFTER, ONLY FOR TTEST printInFile(A, *s, fp);
                 case 2:   editRecord(A, *s); break;// to add 2, 3, 5
                 case 3: *s = deleteRecord(A, *s); printInFile(A, *s, fp);  break;
                 case 4: *s = importData(A, *s, fp); break;
-                case 5: break;
+                case 5: exportData(A, *s, fp); break;
             }
 
         } while (nInput != 6);
