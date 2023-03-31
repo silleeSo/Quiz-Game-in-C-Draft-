@@ -144,7 +144,7 @@ Hippopotamus
 
 Animal
 7
-The insect which has the largest population on earth is the <blank>
+The insect which has the largest population on earth is the
 Ant
 Butterfly
 Wasp

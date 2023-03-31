@@ -29,7 +29,11 @@ typedef struct questionFormat
 
 }questionFormat;
 //question 150, answer and choices 30, topic 20
+typedef struct leaderboardFormat{
+    string20 name;
+    int score;
 
+};
 //MANAGE FUNCTIONS
 void printInFile(struct questionFormat *A, int s, FILE *fp){
     fp = fopen("records.txt", "w");
@@ -106,6 +110,12 @@ int importData(struct questionFormat *A, int s, FILE *fp){
     string30 fileName;
     printf("Import file name (txt) to import: ");
     scanf("%s", fileName);
+    while (fopen(fileName, "r") == NULL){
+        printf("Filename does not exist! Try again: ");
+        scanf("%s", fileName);
+    }
+
+   
     fp = fopen(fileName, "r");
     int pos = 0;
     int strInd =0, arrInd = 0; //CHANGE ARRAY INDEX N SET TO S IF EVER MAM SAYS NA NEED LANG APPEND, NOT REWRITE
@@ -475,8 +485,10 @@ void playGame (struct questionFormat *A, int s, time_t timeVar){
     //create array of topics
     string20 topics[s];
     string20 selectedTopic;     
-    string150 name;                                //index of the selected question in the array 
-   int ctrTopics = 0, exists = 0, arrayTopicsSize = 0, selectedIndex = 0, nInput; //reset variables
+    string150 name;                 
+    srand( time(&timeVar));
+                   //index of the selected question in the array 
+   int ctrTopics = 0, exists = 0, arrayTopicsSize = 0, selectedIndex = 0, nInput, correctAnswer; //reset variables
     for (int i = 0; i < s; i++){
         for (int j = 0; j < ctrTopics; j++)
             if (!strcmp(A[i].topic, topics[j])) // check if exists na ung topic of current ques in topics array
@@ -490,16 +502,14 @@ void playGame (struct questionFormat *A, int s, time_t timeVar){
         exists = 0; //reset flag variable
     }//end of atopics array creation
     //ctrTopics = size of topics array
-
-        printf("Select a Topic: \n");
-        //display topics
-        for (int i = 0; i < ctrTopics; i++)
-            printf("%d - %s\n", i+1, topics[i]);
-    //TOPICS ARRAY CREATION SAME AS EDIT FUNCTION, CAN MODULARIZE INTO ONE FUNCTION
-
-    //ask for name
+     //ask for name
     printf("Please enter your name: ");
     scanf("%s", name);
+do{
+       
+    //TOPICS ARRAY CREATION SAME AS EDIT FUNCTION, CAN MODULARIZE INTO ONE FUNCTION
+
+   
     printf("\nSelect a topic\n");
      
     //display the topics
@@ -527,17 +537,17 @@ void playGame (struct questionFormat *A, int s, time_t timeVar){
     //get last question num in that topic
         //loop through the array of questions, and everytime may question na match, add number
          int lastQuesNum = 0;
-            for (int i = 0; i < s; i++) //loop through the array of structs 
+            for (int j = 0; j < s; j++) //loop through the array of structs 
            // look for the question with the same topic (as added question) with the highest num 
-                if (!strcmp(A[i].topic, selectedTopic) &&  A[i].questionNum > lastQuesNum)
-                    lastQuesNum = A[i].questionNum;
+                if (!strcmp(A[j].topic, selectedTopic) &&  A[j].questionNum > lastQuesNum)
+                    lastQuesNum = A[j].questionNum;
                 //take the last num and add one to it, set it as the new question num
                // A[s].questionNum = lastQuesNum+1;
                
                //**you now have the last q num
     
     //generate random number within 1 - the last num
-    srand( time(&timeVar));
+    
     //generate random odd value from 1-last question num
     int nRandomNum = rand() % (lastQuesNum+1);
     if (nRandomNum == 0)
@@ -559,27 +569,48 @@ void playGame (struct questionFormat *A, int s, time_t timeVar){
 
 
 //display question
-printf("last ques: %d, randNum: %d : %s\n",lastQuesNum, nRandomNum, A[randomQuestionInd].question);
-
-
-/*
-
+printf("\nYour question is...\n\n%s\n", A[randomQuestionInd].question);
+//print answer, accept
+printf("1 - %s\n2 - %s\n3 - %s\nAnswer (1-3): ", A[randomQuestionInd].choice1,  A[randomQuestionInd].choice2,  A[randomQuestionInd].choice3);
     
-    srand( time(&timeVar));
-    //generate random odd value from 1-last question num
-    int nRandomNum = rand() % lastQuesNum;
-
-    
-*/
-
-    /*do{
-   
-
-}while (nInput != 0);*/
-
+scanf("%d", &nInput);
+while (nInput < 1 || nInput > 3){
+    printf("Invalid Input, try again: ");
+    scanf("%d", &nInput);
 }
 
-void playFunc (struct questionFormat *A, int s, time_t timeVar){
+// check which choice is supposed to be the right answer
+if (!strcmp(A[randomQuestionInd].choice1, A[randomQuestionInd].answer))
+    correctAnswer = 1;
+else if (!strcmp(A[randomQuestionInd].choice2, A[randomQuestionInd].answer))
+    correctAnswer = 2;
+else
+    correctAnswer = 3;
+
+//if input is the same as the correct answer
+if (nInput == correctAnswer){
+    //1. print
+    printf("Correct! (+5 pnts)");
+    //2. add score
+    
+    //3. update leaderboard
+    //4. ask if want to end game
+    
+}
+else
+    printf("Sorry! Wrong answer.");
+
+//give user option to continue or end game
+printf("\n\n1 - Next question\n0 - End game\n");
+scanf("%d", &nInput);
+}while (nInput != 0);
+
+//printf("\nYour score is %d", )
+
+ 
+}
+
+void playFunc (struct questionFormat *A, int s, time_t timeVar, int leaderBoardSize){
     int nInput;
     printf("1 - Play Game\n2 - View Scores\n3 - Exit\n");
     scanf("%d", &nInput);
@@ -618,7 +649,7 @@ int main(){
     questionFormat questions[100];
     string30 password = "Mam quatro po";
     int size=0;
-    int menuChoice = 0;
+    int menuChoice = 0, leaderBoardSize = 0;
     FILE *fp;
     do{
         printMenu();
@@ -627,7 +658,7 @@ int main(){
         switch (menuChoice)
         {
             case 1: manageFunc(password, questions, &size, fp); break;
-            case 2: playFunc(questions, size, timeVar); break;
+            case 2: playFunc(questions, size, timeVar, leaderBoardSize); break;
             case 3: break;
         }
 
