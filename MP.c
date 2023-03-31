@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <conio.h>
+#include <time.h>
+#include <stdlib.h>
 #define LEN1 20
 #define LEN2 30
 #define LEN3 150
@@ -9,6 +11,11 @@ typedef char string20[LEN1];
 typedef char string30[LEN2];
 typedef char string150[LEN3];
 
+/*  THINGS TO MODULARIzED
+    1. make topics array
+    2. match question topic and question num to a specific question in array of struct
+
+*/
 
 typedef struct questionFormat
 {
@@ -23,6 +30,7 @@ typedef struct questionFormat
 }questionFormat;
 //question 150, answer and choices 30, topic 20
 
+//MANAGE FUNCTIONS
 void printInFile(struct questionFormat *A, int s, FILE *fp){
     fp = fopen("records.txt", "w");
     for(int i = 0; i < s; i++){
@@ -267,7 +275,7 @@ void editRecord(struct questionFormat *A, int s){
         //take question index in 1d array
          scanf("%d", &nInput);
         while (A[selectedIndex].questionNum != nInput || strcmp(A[selectedIndex].topic, selectedTopic) != 0)
-            selectedIndex++;
+            selectedIndex++; //get index of selected question
         printf("Which field would you like to edit?\n1 - Topic\n2 - Question\n3 - choice 1\n4 - choice 2\n5 - choice 3\n6 - answer\n");
         scanf("%d", &nInput);
         printf("Input the new content of question %d ", A[selectedIndex].questionNum);
@@ -306,7 +314,7 @@ void editRecord(struct questionFormat *A, int s){
         default:
             break;
         }
-        //printf("Question %d ", A[selectedIndex].questionNum , A[selectedIndex].question);
+        
         printf("\nRecord edited successfully!\n\n");
         loopCtr ++;}
     } while (nInput!=0);
@@ -400,7 +408,7 @@ int deleteRecord(struct questionFormat *A, int s){
         return s;
 }
 
-void manageData (string30 password,  questionFormat A[], int *s, FILE *fp){
+void manageFunc (string30 password,  questionFormat A[], int *s, FILE *fp){
     //declare variables
     string30 strInput;
     int nInput = 0;
@@ -449,7 +457,141 @@ void manageData (string30 password,  questionFormat A[], int *s, FILE *fp){
     }
 
 }
-void playGame (){
+
+
+/*PLAY FUNCTIONS/
+1. NAME
+2. Every turn: choose form topic
+3. give random question
+4. if correct add score, if not display sorry message
+5. ask for another topic again
+**have an end game option for every turn
+    if end game is selected, display final message showing accumulated score, return to the (play?) menu
+
+*/
+
+
+void playGame (struct questionFormat *A, int s, time_t timeVar){
+    //create array of topics
+    string20 topics[s];
+    string20 selectedTopic;     
+    string150 name;                                //index of the selected question in the array 
+   int ctrTopics = 0, exists = 0, arrayTopicsSize = 0, selectedIndex = 0, nInput; //reset variables
+    for (int i = 0; i < s; i++){
+        for (int j = 0; j < ctrTopics; j++)
+            if (!strcmp(A[i].topic, topics[j])) // check if exists na ung topic of current ques in topics array
+                exists = 1;
+        if (!exists) {//IF WALA PA, ADD TO ARRAY
+            strcpy(topics[ctrTopics], A[i].topic); // add to array of topics
+            ctrTopics++;
+
+        }
+
+        exists = 0; //reset flag variable
+    }//end of atopics array creation
+    //ctrTopics = size of topics array
+
+        printf("Select a Topic: \n");
+        //display topics
+        for (int i = 0; i < ctrTopics; i++)
+            printf("%d - %s\n", i+1, topics[i]);
+    //TOPICS ARRAY CREATION SAME AS EDIT FUNCTION, CAN MODULARIZE INTO ONE FUNCTION
+
+    //ask for name
+    printf("Please enter your name: ");
+    scanf("%s", name);
+    printf("\nSelect a topic\n");
+     
+    //display the topics
+ 
+
+
+ 
+        for (int i = 0; i < ctrTopics; i++)
+            printf("%d - %s\n", i+1, topics[i]);
+        
+        do{
+            scanf("%d", &nInput); //get the topic
+            if (nInput < 1 || nInput > ctrTopics)
+                printf("Topic is not in choices!\n");
+        }while(nInput < 1 || nInput > ctrTopics);
+        
+
+
+        
+       //by this time, hindi na 0 yung input
+        strcpy(selectedTopic, topics[nInput-1]); //-1 since index starts at 0, input starts at 1 lowest
+    //UNTIL HERE SAME WITH EDIT, except for go back to main menu
+
+
+    //get last question num in that topic
+        //loop through the array of questions, and everytime may question na match, add number
+         int lastQuesNum = 0;
+            for (int i = 0; i < s; i++) //loop through the array of structs 
+           // look for the question with the same topic (as added question) with the highest num 
+                if (!strcmp(A[i].topic, selectedTopic) &&  A[i].questionNum > lastQuesNum)
+                    lastQuesNum = A[i].questionNum;
+                //take the last num and add one to it, set it as the new question num
+               // A[s].questionNum = lastQuesNum+1;
+               
+               //**you now have the last q num
+    
+    //generate random number within 1 - the last num
+    srand( time(&timeVar));
+    //generate random odd value from 1-last question num
+    int nRandomNum = rand() % (lastQuesNum+1);
+    if (nRandomNum == 0)
+        nRandomNum++;
+    //based on the index inputted, loop through array to get the corresponding question with the same topic ad the random num generated
+    int randomQuestionInd, found = 0;
+    
+    int i = 0;
+    while (!found){
+        if (!strcmp(A[i].topic, selectedTopic) &&  A[i].questionNum == nRandomNum){ //if the current question in loop ahs same topic as the selected topic
+                                                                                    //and its question num is the same as the random number generated, then save its index for later use
+             randomQuestionInd= i;
+             found = 1;
+        }
+               
+    i++;
+    }
+
+
+
+//display question
+printf("last ques: %d, randNum: %d : %s\n",lastQuesNum, nRandomNum, A[randomQuestionInd].question);
+
+
+/*
+
+    
+    srand( time(&timeVar));
+    //generate random odd value from 1-last question num
+    int nRandomNum = rand() % lastQuesNum;
+
+    
+*/
+
+    /*do{
+   
+
+}while (nInput != 0);*/
+
+}
+
+void playFunc (struct questionFormat *A, int s, time_t timeVar){
+    int nInput;
+    printf("1 - Play Game\n2 - View Scores\n3 - Exit\n");
+    scanf("%d", &nInput);
+    
+    switch (nInput)
+    {
+    case 1: playGame(A, s, timeVar); break;
+    case 2: break;
+    
+    default:
+        break;
+    }
 
 }
 void printMenu(){
@@ -469,7 +611,10 @@ void printMenu(){
     printf("%c\n", BRCorner);
     
 }
+
 int main(){
+    time_t timeVar; // initialize time
+
     questionFormat questions[100];
     string30 password = "Mam quatro po";
     int size=0;
@@ -481,8 +626,8 @@ int main(){
         scanf("%d", &menuChoice);
         switch (menuChoice)
         {
-            case 1: manageData(password, questions, &size, fp); break;
-            case 2: playGame(); break;
+            case 1: manageFunc(password, questions, &size, fp); break;
+            case 2: playFunc(questions, size, timeVar); break;
             case 3: break;
         }
 
