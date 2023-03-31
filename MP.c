@@ -3,10 +3,10 @@
 #include <conio.h>
 #include <time.h>
 #include <stdlib.h>
-#define LEN1 20
-#define LEN2 30
-#define LEN3 150
-#define SIZE 1000
+#define LEN1 21
+#define LEN2 31
+#define LEN3 151
+#define SIZE 100
 typedef char string20[LEN1];
 typedef char string30[LEN2];
 typedef char string150[LEN3];
@@ -29,11 +29,11 @@ typedef struct questionFormat
 
 }questionFormat;
 //question 150, answer and choices 30, topic 20
-typedef struct leaderboardFormat{
-    string20 name;
+typedef struct leaderBoardFormat{
+    string30 name;
     int score;
 
-};
+}leaderBoardFormat;
 //MANAGE FUNCTIONS
 void printInFile(struct questionFormat *A, int s, FILE *fp){
     fp = fopen("records.txt", "w");
@@ -481,11 +481,12 @@ void manageFunc (string30 password,  questionFormat A[], int *s, FILE *fp){
 */
 
 
-void playGame (struct questionFormat *A, int s, time_t timeVar){
+int playGame (struct questionFormat *A, int s, time_t timeVar, int leaderBoardSize, leaderBoardFormat *leaderBoard){
     //create array of topics
     string20 topics[s];
     string20 selectedTopic;     
-    string150 name;                 
+    string150 name;  
+    leaderBoard[leaderBoardSize].score = 0;               
     srand( time(&timeVar));
                    //index of the selected question in the array 
    int ctrTopics = 0, exists = 0, arrayTopicsSize = 0, selectedIndex = 0, nInput, correctAnswer; //reset variables
@@ -504,7 +505,8 @@ void playGame (struct questionFormat *A, int s, time_t timeVar){
     //ctrTopics = size of topics array
      //ask for name
     printf("Please enter your name: ");
-    scanf("%s", name);
+    scanf("%s", leaderBoard[leaderBoardSize].name); //get name and store it to the current leaderboard row
+    
 do{
        
     //TOPICS ARRAY CREATION SAME AS EDIT FUNCTION, CAN MODULARIZE INTO ONE FUNCTION
@@ -512,14 +514,12 @@ do{
    
     printf("\nSelect a topic\n");
      
-    //display the topics
- 
-
-
- 
+    //display the topics 
         for (int i = 0; i < ctrTopics; i++)
             printf("%d - %s\n", i+1, topics[i]);
-        
+
+         printf("Score: %d\n", leaderBoard[leaderBoardSize].score);//print score
+         //get input
         do{
             scanf("%d", &nInput); //get the topic
             if (nInput < 1 || nInput > ctrTopics)
@@ -572,7 +572,7 @@ do{
 printf("\nYour question is...\n\n%s\n", A[randomQuestionInd].question);
 //print answer, accept
 printf("1 - %s\n2 - %s\n3 - %s\nAnswer (1-3): ", A[randomQuestionInd].choice1,  A[randomQuestionInd].choice2,  A[randomQuestionInd].choice3);
-    
+printf("\nScore: %d\n", leaderBoard[leaderBoardSize].score);
 scanf("%d", &nInput);
 while (nInput < 1 || nInput > 3){
     printf("Invalid Input, try again: ");
@@ -590,39 +590,73 @@ else
 //if input is the same as the correct answer
 if (nInput == correctAnswer){
     //1. print
-    printf("Correct! (+5 pnts)");
+    printf("\nCorrect! (+5 pnts)");
     //2. add score
-    
+    leaderBoard[leaderBoardSize].score += 5;
+   
     //3. update leaderboard
     //4. ask if want to end game
     
 }
 else
-    printf("Sorry! Wrong answer.");
+    printf("\nSorry! Wrong answer.");
 
 //give user option to continue or end game
-printf("\n\n1 - Next question\n0 - End game\n");
+printf("\n\nScore: %d\n\n1 - Next question\n0 - End game\n", leaderBoard[leaderBoardSize].score);
 scanf("%d", &nInput);
 }while (nInput != 0);
 
-//printf("\nYour score is %d", )
+printf("\nCONGRATULATIONS, YOUR FINAL SCORE IS: %d\n\n", leaderBoard[leaderBoardSize].score);
 
+//printf("leader board size: %d\n", leaderBoardSize);   TESTER
+return leaderBoardSize + 1; //return incremented leaderboard size
  
 }
 
-void playFunc (struct questionFormat *A, int s, time_t timeVar, int leaderBoardSize){
+void viewScores(int leaderBoardSize, leaderBoardFormat *leaderBoard){
     int nInput;
+    printf("Row\tPlayer Name\tScore\n");
+    for(int i = 0; i < leaderBoardSize; i++)
+        printf("%d%+17s\t%d\n", i+1, leaderBoard[i].name, leaderBoard[i].score );
+    printf("\nPress 0 to go back: ");
+    scanf("%d", &nInput);
+    while (nInput!=0){
+        printf("Invalid Input\n");
+        scanf("%d", &nInput);
+    }
+}
+void playFunc (struct questionFormat *A, int s, time_t timeVar, int *leaderBoardSize, leaderBoardFormat *leaderBoard){
+    FILE *fp;
+    int nInput;
+    do{
+    fp = fopen("scores.txt", "w");
+   
+    //printf("leader board size: %d\n", *leaderBoardSize);  TESTER
+    for (int i = 0; i < *leaderBoardSize; i++){
+        fprintf(fp, "%s\n", leaderBoard[i].name);
+        fprintf(fp, "%d\n\n", leaderBoard[i].score);
+
+        
+    }
+    fclose(fp);
+    
     printf("1 - Play Game\n2 - View Scores\n3 - Exit\n");
     scanf("%d", &nInput);
+    while (nInput < 1 || nInput > 3){
+        printf("Invalid Input, try again: ");
+        scanf("%d", &nInput);
+    }
+
     
     switch (nInput)
     {
-    case 1: playGame(A, s, timeVar); break;
-    case 2: break;
+    case 1: *leaderBoardSize = playGame(A, s, timeVar, *leaderBoardSize, leaderBoard); break;
+    case 2: viewScores(*leaderBoardSize, leaderBoard); break;
     
-    default:
+    case 3:
         break;
     }
+    }while (nInput!=3);
 
 }
 void printMenu(){
@@ -647,6 +681,7 @@ int main(){
     time_t timeVar; // initialize time
 
     questionFormat questions[100];
+    leaderBoardFormat leaderBoard[100];
     string30 password = "Mam quatro po";
     int size=0;
     int menuChoice = 0, leaderBoardSize = 0;
@@ -658,7 +693,7 @@ int main(){
         switch (menuChoice)
         {
             case 1: manageFunc(password, questions, &size, fp); break;
-            case 2: playFunc(questions, size, timeVar, leaderBoardSize); break;
+            case 2: playFunc(questions, size, timeVar, &leaderBoardSize, leaderBoard); break;
             case 3: break;
         }
 
