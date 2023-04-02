@@ -4,29 +4,16 @@
 //TO ORGANIZE: ALL
 
 //MANAGE
-//USELESS FUNC
-void 
-printInFile (questionFormat *A, int s, FILE *fp)
-{
-    fp = fopen("records.txt", "w");
-    for(int i = 0; i < s; i++){
-        fprintf(fp, "%s\n", A[i].topic);
-        fprintf(fp, "%d\n", A[i].questionNum);
-        fprintf(fp, "%s\n", A[i].question);
-        fprintf(fp, "%s\n", A[i].choice1);
-        fprintf(fp, "%s\n", A[i].choice2);
-        fprintf(fp, "%s\n", A[i].choice3);
-        fprintf(fp, "%s\n", A[i].answer);
-    }
-    fclose(fp);
-}
 
-void copyCharacter(char str[], int *strInd, char ch){
-            str[*strInd] = ch;      // set the value of a character in a string (of array struct element) to ch (where ch is a character read from file)
-            *strInd++;              //increment the string index
-            str[*strInd] = '\0';    //concatenate null byte
+void 
+catCharacter(char *strPointer, int *strIndex, char cNewChar){
+            strPointer[*strIndex] = cNewChar;      // set the value of a character in a string (of array struct element) to ch (where ch is a character read from file)
+            *strIndex++;              //increment the string index
+            strPointer[*strIndex] = '\0';    //concatenate null byte
         }
-int addRecord( questionFormat *A, int s) //start from index after last element, add question (s - number of existing questions/ records)
+
+int 
+addRecord( questionFormat *questionList, int nNumOfQues) //start from index after last element, add question (s - number of existing questions/ records)
 {
     //declare variables   
     string150 question;
@@ -46,8 +33,9 @@ int addRecord( questionFormat *A, int s) //start from index after last element, 
         gets(answer);
     
     //loop thru all elements and check if question and answered from user input already exists in array of questions
-        for (int i = 0; i < s; i++){
-            if (!strcmp(A[i].question, question) && !strcmp(A[i].answer, answer))
+        for (int i = 0; i < nNumOfQues; i++)
+        {
+            if (!strcmp(questionList[i].question, question) && !strcmp(questionList[i].answer, answer))
                 exists = 1;
         }
        
@@ -68,32 +56,32 @@ int addRecord( questionFormat *A, int s) //start from index after last element, 
         else { 
             nInput = 0; 
             // copy the question and answer to structure in array
-            strcpy(A[s].question, question);  
-            strcpy(A[s].answer, answer); 
+            strcpy(questionList[nNumOfQues].question, question);  
+            strcpy(questionList[nNumOfQues].answer, answer); 
             //get the remaining information needed (topic)
             printf("Enter the topic of the question: ");
-            gets(A[s].topic);
+            gets(questionList[nNumOfQues].topic);
             printf("Enter choice 1: ");
-            gets(A[s].choice1);
+            gets(questionList[nNumOfQues].choice1);
             printf("Enter choice 2: ");
-            gets(A[s].choice2);
+            gets(questionList[nNumOfQues].choice2);
             printf("Enter choice 3: ");
-            gets(A[s].choice3);
+            gets(questionList[nNumOfQues].choice3);
 
         //automatically set the question number:
             //last question number has been initialized to 0
             lastQuesNum = 0;
 
-            for (int i = 0; i < s; i++) //loop through the array of structs (questions/records)
+            for (int i = 0; i < nNumOfQues; i++) //loop through the array of structs (questions/records)
             // if the current question in loop has the same topic (as the added question) and a higher question number
-                if (!strcmp(A[i].topic, A[s].topic) &&  A[i].questionNum > lastQuesNum) 
-                    lastQuesNum = A[i].questionNum;     // set the last question number to question number of current question in loop
+                if (!strcmp(questionList[i].topic, questionList[nNumOfQues].topic) &&  questionList[i].questionNum > lastQuesNum) 
+                    lastQuesNum = questionList[i].questionNum;     // set the last question number to question number of current question in loop
 
             //after getting the last question number,add one to it and set it as the question number of the newly added question
-            A[s].questionNum = lastQuesNum+1;
+            questionList[nNumOfQues].questionNum = lastQuesNum+1;
 
             //increment the size of array (of questions/records)
-            s++;
+            nNumOfQues++;
 
             //print notifying message
             printf("\nRecord added successfully!\n"); 
@@ -101,130 +89,261 @@ int addRecord( questionFormat *A, int s) //start from index after last element, 
 
     }while (nInput == 1); // loop this until user chooses to go back to manage menu after failure to add or until a record has been addded
     
-    return s; //return new array size
+    return nNumOfQues; //return new array size
 }
 
-int importData( questionFormat *questionList, int s, FILE *fp){
+int
+importData (questionFormat *questionList, FILE *filePointer){
     //declare variables
     string30 fileName;
-    int pos = 0, strInd =0, arrInd = 0; //CHANGE ARRAY INDEX N SET TO S IF EVER MAM SAYS NA NEED LANG APPEND, NOT REWRITE
-    char ch;
+    int nPosition = 0, strInd =0, nArrayInd = 0, nInput = 1; //CHANGE ARRAY INDEX N SET TO S IF EVER MAM SAYS NA NEED LANG APPEND, NOT REWRITE
+    char cCurrentChar;
 
-    //ask for filename and validate
-    printf("Import file name (txt) to import: ");
-    scanf("%s", fileName);
-    while (fopen(fileName, "r") == NULL)
+    do
     {
-        printf("Filename does not exist! Try again: ");
+        //ask for filename and validate
+        printf("Import file name (txt) to import: ");
         scanf("%s", fileName);
-    }
+        printf("Filename does not exist!\n");
+        printf("0 - Go back to manage menu\n1 - Try again\n");
+        scanf("%d", &nInput);
 
-    
-    fp = fopen(fileName, "r");
-
-    while (!feof(fp)){ //** position refers to the member of the struct (0-6)
-        fscanf(fp, "%c", &ch); //Get the character in the loop (loop through file characters)
-        if (ch == '\n') { //if character is newline, check if we are in position 7 (the separation between questions)
-            if (pos == 7){
-                arrInd++; //if we are in position 7 (the separation between questions)
-                pos = 0; //reset position to zero and increment struct array index
+        //nInput Validation
+         while (nInput != 0 && nInput != 1) 
+            {
+                printf("Invalid input, try again: ");
+                scanf("%d", &nInput);
             }
-            else // if it is any other position than 7
-                pos++; //simply increment position
-            strInd = 0; // Reset string index for both cases, meaning everytime the program finishes reading one line, reset string index for next
+
+    // loop while the user inputs and invalid filename and does not choose to return to manage menu
+    } while (fopen(fileName, "r") == NULL && nInput != 0); 
+
+    // IF THE USER DID NOT RETURN TO MANAGE MENU
+    if (nInput == 1)
+    { 
+        filePointer = fopen(fileName, "r"); //Open file
+        while (!feof(filePointer))
+        { 
+        //*Note that position (pos) refers to the member of the struct (0-6)
+
+            //Get the character in the loop (loop through file characters)
+            fscanf(filePointer, "%c", &cCurrentChar); 
+            
+            //if character is newline, check if we are in position 7(the separation between questions) or not
+            if (cCurrentChar == '\n') 
+            { 
+                //if we are in position 7 (the separation between questions)
+                if (nPosition == 7)
+                {   
+                    //increment array index, meaning we move on to the next question struct alotted in the array
+                    nArrayInd++; 
+
+                    //reset position to zero and increment struct array index
+                    nPosition = 0; 
+                }
+
+                // if it is any other position than 7
+                else 
+
+                    //simply increment position
+                    nPosition++; 
+
+                // Reset string index for both cases, meaning everytime the program finishes reading one line, reset string index for next
+                strInd = 0; 
             }
-        else{
-            switch (pos){
-                case 0: copyCharacter (questionList[arrInd].topic, &strInd, ch);
-                        break;
-                case 1: questionList[arrInd].questionNum = (int)ch - 48;
-                        break;
-                case 2: copyCharacter (questionList[arrInd].question, &strInd, ch);
-                        break;
-                case 3: copyCharacter (questionList[arrInd].choice1, &strInd, ch);
-                        break;
-                case 4: copyCharacter (questionList[arrInd].choice2, &strInd, ch);
-                        break;
-                case 5: copyCharacter (questionList[arrInd].choice3, &strInd, ch);
-                        break;
-                case 6: copyCharacter (questionList[arrInd].answer, &strInd, ch);
-                        break;
-    }
-        }
-        //topic
-        /*
-        else if (pos == 0){
-            questionList[arrInd].topic[strInd] = ch; 
-            strInd++; //increment the string index
-            questionList[arrInd].topic[strInd] = '\0'; //add null byte after
-        } //The program will keep coming back to this, so long as it does not detect a newline character and we are in position 1, same with the rest
-        //number
-        else if (pos == 1){  //if we are in the question number line/position
-           questionList[arrInd].questionNum = (int)ch - 48; //set the question num (of struct array element) to ch converted to int - 48
-        }                                       // 1 was read as '1', meaning if we convert to int it is == 49. Subtracting 48 results to 1.
-        //Question
-        else if (pos == 2){
-            questionList[arrInd].question[strInd] = ch;
-            strInd++;
-            questionList[arrInd].question[strInd] = '\0';
-        }
-        //Choice 1
-        else if (pos == 3){
-            questionList[arrInd].choice1[strInd] = ch;
-            strInd++;
-            questionList[arrInd].choice1[strInd] = '\0';
-        }
-        //Choice 2
-        else if (pos == 4){
-            questionList[arrInd].choice2[strInd] = ch;
-            strInd++;
-            questionList[arrInd].choice2[strInd] = '\0';
-        }
-        //Choice 3
-         else if (pos == 5){
-            questionList[arrInd].choice3[strInd] = ch;
-            strInd++;
-            questionList[arrInd].choice3[strInd] = '\0';
-        }
-        //Answer
-         else if (pos == 6){
-            questionList[arrInd].answer[strInd] = ch;
-            strInd++;
-            questionList[arrInd].answer[strInd] = '\0';
-        }*/
 
-    /* send A[arrInd].answer //this is a string pointer
-    copyCharacter (A[arrInd].question, &strInd, ch);
+            //when the current character in loop is not new line
+            else
+            {
+                switch (nPosition){
 
-        void copyCharacter(string str[], int *strInd, char ch){
-            str[*strInd] = ch;
-            *strInd++;
-            str[*strInd] = '\0;
+                    //concatenate the current character to the topic string
+                    //The program will keep coming back to this case, so long as it does not detect a newline character and we are in position 0, same with the rest
+                    case 0: catCharacter (questionList[nArrayInd].topic, &strInd, cCurrentChar);    //Topic Line
+                            break;
+
+                    //set the question num (of struct array element) to ch converted to int - 48
+                    // Note: 1 was read as '1', meaning if we convert to int it is == 49. Subtracting 48 results to 1.
+                    case 1: questionList[nArrayInd].questionNum = (int)cCurrentChar - 48;  
+                            break;                                            
+                    case 2: catCharacter (questionList[nArrayInd].question, &strInd, cCurrentChar); //Question Line
+                            break;
+                    case 3: catCharacter (questionList[nArrayInd].choice1, &strInd, cCurrentChar);  //Choice 1 Line
+                            break;
+                    case 4: catCharacter (questionList[nArrayInd].choice2, &strInd, cCurrentChar);  //Choice 2 Line
+                            break;
+                    case 5: catCharacter (questionList[nArrayInd].choice3, &strInd, cCurrentChar);  //Choice 3 Line
+                            break;
+                    case 6: catCharacter (questionList[nArrayInd].answer, &strInd, cCurrentChar);   // Answer Line
+                            break;
+                }
+            }
         }
-    switch (pos){
-        case 0: copyCharacter (questionList[arrInd].topic, &strInd, ch);
-                break;
-        case 1: questionList[arrInd].questionNum = (int)ch - 48;
-                 break;
-        case 2: copyCharacter (questionList[arrInd].question, &strInd, ch);
-                 break;
-        case 3: copyCharacter (questionList[arrInd].choice1, &strInd, ch);
-                break;
-        case 4: copyCharacter (questionList[arrInd].choice2, &strInd, ch);
-                break;
-        case 5: copyCharacter (questionList[arrInd].choice3, &strInd, ch);
-                break;
-        case 6: copyCharacter (questionList[arrInd].answer, &strInd, ch);
-                break;
-    }
-    */
 
+        //close file
+        fclose(filePointer); 
+
+        //print notifying message
+        printf("\nData imported successfully!\n"); 
     }
-    
-        fclose(fp); //close file
-   
-       s=arrInd;
-        printInFile(questionList, s, fp);
-        printf("\nData imported successfully!\n");
-        return s;
+
+    //return new array size
+    //Note: nArrayInd is always incremented one more than the actual last index, which makes it equal to the question list size
+    return nArrayInd;   
+
 }
+
+void 
+exportData( questionFormat *questionList, int nNumOfQues, FILE *filePointer)
+{
+    //declare variables
+    string30 strFileName;
+
+    //ask user for filename with extension
+    printf("Import file name (txt) to export to: ");
+    scanf("%s", strFileName);
+
+    //open the file
+    filePointer = fopen (strFileName, "w");
+
+    for(int i = 0; i < nNumOfQues; i++)
+    {
+        //print out each question (struct) member in this order:
+        fprintf(filePointer, "%s\n", questionList[i].topic); 
+        fprintf(filePointer, "%d\n", questionList[i].questionNum);  
+        fprintf(filePointer, "%s\n", questionList[i].question);
+        fprintf(filePointer, "%s\n", questionList[i].choice1);
+        fprintf(filePointer, "%s\n", questionList[i].choice2);
+        fprintf(filePointer, "%s\n", questionList[i].choice3);
+        fprintf(filePointer, "%s\n\n", questionList[i].answer);
+    }
+    //close the file
+    fclose(filePointer);
+    printf("\nData exported successfully!\n");
+}
+
+//QUERIES
+//if no record paano?? display warning?
+//ADD VALIDATION NA PAG INPUT IF ZERO KASO FIRST CYCLE PALANG NAMAN
+// ADD VALIDATION IF NO RECORDS TAS U TRY TO EDIT
+void editRecord( questionFormat *questionList, int nNumOfQues){
+    //create array of topics
+    string20 topics[nNumOfQues];
+    string20 selectedTopic;                                     //index of the selected question in the array 
+    int ctrTopics, bQuesExists, nInput, selectedIndex, loopCtr = 0, nMinInput = 1; //counter for topics array
+   
+
+    do{
+        //reset variables
+        ctrTopics = 0, bQuesExists = 0, selectedIndex = 0; 
+
+        //CREATE AN ARRAY OF EXISTING TOPICS:
+        //loop through array of questions
+        for (int i = 0; i < nNumOfQues; i++)
+        {
+            //loop through array of existing topics
+            for (int j = 0; j < ctrTopics; j++)
+
+                //check if the topic current question in loop already exists in the array of topics
+                if (!strcmp(questionList[i].topic, topics[j])) 
+
+                    //if it does exist, set bQuesExists to 1 (true)
+                    bQuesExists = 1;
+            
+            //after looping through the array of topics, if it stil doesn't exist, add it to array of topics 
+            if (!bQuesExists) {
+                strcpy(topics[ctrTopics], questionList[i].topic); 
+                ctrTopics++;
+            }
+
+            //reset flag variable
+            bQuesExists = 0; 
+        }
+
+    //Note: ctrTopics is equivalent to the size of topics array
+    
+    //if one edit has already been made, add new option to go back to manage menu
+        if (loopCtr > 0)
+        {
+            printf("0 - Go back to main menu\n");
+
+            //0 can now be a valid user input
+            nMinInput = 0;
+        }
+            
+        printf("Select a Topic: \n");
+
+        //display topics
+        for (int i = 0; i < ctrTopics; i++)
+            printf("%d - %s\n", i+1, topics[i]);
+        
+        //get user input (int)
+        scanf("%d", &nInput);
+
+        //input validation
+        while (nInput < nMinInput || nInput > ctrTopics)
+            {
+                printf("Invalid input, try again: ");
+                scanf("%d", &nInput);
+            }
+        //CLEAN UP ENDED HERE
+        if (nInput != 0){
+        strcpy(selectedTopic, topics[nInput-1]); //-1 since index starts at 0, input starts at 1 lowest
+        //if no records paano??
+       
+        //display questions - WORKS!
+        printf("Enter a question number: \n");
+        for (int i = 0; i < nNumOfQues; i++){
+            if (!strcmp(questionList[i].topic, selectedTopic))
+
+                printf("Question %d - %s\n", questionList[i].questionNum , questionList[i].question);
+        }
+        //take question index in 1d array
+         scanf("%d", &nInput);
+        while (questionList[selectedIndex].questionNum != nInput || strcmp(questionList[selectedIndex].topic, selectedTopic) != 0)
+            selectedIndex++; //get index of selected question
+        printf("Which field would you like to edit?\n1 - Topic\n2 - Question\n3 - choice 1\n4 - choice 2\n5 - choice 3\n6 - answer\n");
+        scanf("%d", &nInput);
+        printf("Input the new content of question %d ", questionList[selectedIndex].questionNum);
+        switch (nInput)
+        {
+        case 1: 
+            printf("topic: ");
+            gets(questionList[selectedIndex].topic);
+            gets(questionList[selectedIndex].topic);
+            break;
+        case 2: 
+            printf("question: ");
+            gets(questionList[selectedIndex].question);
+            gets(questionList[selectedIndex].question);
+            break;
+        case 3: 
+            printf("choice 1: ");
+            gets(questionList[selectedIndex].choice1);
+            gets(questionList[selectedIndex].choice1);
+            break;
+        case 4: 
+            printf("choice 2: ");
+            gets(questionList[selectedIndex].choice2);
+            gets(questionList[selectedIndex].choice2);
+            break;
+        case 5: 
+            printf("choice 3: ");
+            gets(questionList[selectedIndex].choice3);
+            gets(questionList[selectedIndex].choice3);
+            break;
+        case 6: 
+            printf("answer: ");
+            gets(questionList[selectedIndex].answer);
+            gets(questionList[selectedIndex].answer);
+            break;
+        default:
+            break;
+        }
+        
+        printf("\nRecord edited successfully!\n\n");
+        loopCtr ++;}
+    } while (nInput!=0);
+       
+     
+}//TO ADD: INPUT VALIDATION FOR EVERY QUESTIO

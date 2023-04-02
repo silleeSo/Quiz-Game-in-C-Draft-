@@ -30,11 +30,12 @@ typedef struct {
 
 }leaderBoardFormat;
 
-void printInFile( questionFormat *A, int s, FILE *fp);
-int addRecord( questionFormat *A, int s);
-int importData( questionFormat *A, int s, FILE *fp);
-void exportData( questionFormat *A, int s, FILE *fp);
-void editRecord( questionFormat *A, int s);
+
+void catCharacter(char *strPointer, int *strIndex, char cNewChar);
+int addRecord( questionFormat *questionList, int nNumOfQues);
+int importData( questionFormat *questionList, FILE *filePointer);
+void exportData( questionFormat *questionList, int nNumOfQues, FILE *filePointer);
+void editRecord( questionFormat *questionList, int nNumOfQues);
 int deleteRecord( questionFormat *A, int s);
 void manageFunc (string30 password,  questionFormat A[], int *s, FILE *fp);
 int playGame ( questionFormat *A, int s, time_t timeVar, int leaderBoardSize, leaderBoardFormat *leaderBoard);
