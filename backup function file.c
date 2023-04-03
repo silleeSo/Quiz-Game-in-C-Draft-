@@ -6,27 +6,23 @@
 //MANAGE
 
 void 
-catCharacter(char *strPointer, int *strIndex, char cNewChar)
-{
+catCharacter(char *strPointer, int *strIndex, char cNewChar){
     strPointer[*strIndex] = cNewChar;      // set the value of a character in a string (of array struct element) to ch (where ch is a character read from file)
     *strIndex += 1;              //increment the string index
     strPointer[*strIndex] = '\0';    //concatenate null byte
 }
 
 void 
-editField(char *fieldName, char *field)
-{
-    printf("Input the new content of %s: ", fieldName);
+editField(char *fieldName, char *field){
+    printf("%s: ", fieldName);
     gets(field);
     gets(field);
-    printf("\nRecord edited successfully!\n\n");
                 
 }
 
 
 int 
-getIntInput (int nLowerBound, int nUpperBound)
-{
+getIntInput (int nLowerBound, int nUpperBound){
     int character, nInput;
     
     scanf("%d", &nInput);
@@ -37,32 +33,9 @@ getIntInput (int nLowerBound, int nUpperBound)
         printf("Invalid input, try again: ");
         scanf("%d", &nInput);
     }
+ 
+    
 }
-
-void editChoice(char *strChoiceName, char *strChoice,  char *strAnswer)
-{   
-    //declare variable for user input
-    int nInput;
-
-    //if choice and answer are the same
-    if (!strcmp(strChoice, strAnswer)) 
-    {
-        //display warning message
-        printf("\nThis choice contains the correct answer. Editing this choice will automatically edit the answer.\nDo you wish to proceed?");
-        printf("\n1 - Proceed\n0 - Cancel\n");
-        nInput = getIntInput (0,1);
-        if (nInput)
-        {       
-            //edit answer n choice
-            editField(strChoiceName, strChoice);
-            strcpy (strAnswer, strChoice);
-        }        
-    }
-    else
-         //if the answer and choice are not the same, just edit the field normally (immediately accept input from user)   
-        editField(strChoiceName, strChoice);      
-}
-        
 
 int 
 addRecord( questionFormat *questionList, int nNumOfQues) //start from index after last element, add question (s - number of existing questions/ records)
@@ -370,7 +343,8 @@ void editRecord( questionFormat *questionList, int nNumOfQues){
             printf("Which field would you like to edit?\n1 - Topic\n2 - Question\n3 - choice 1\n4 - choice 2\n5 - choice 3\n6 - answer\n");
            
             nInput= getIntInput(1, 6);
-            
+            printf("Input the new content of question %d ", questionList[selectedIndex].questionNum);
+
             //based on the user input, ask for new content in specified field
             switch (nInput)
             {
@@ -378,18 +352,56 @@ void editRecord( questionFormat *questionList, int nNumOfQues){
                         break;
                 case 2: editField ("question", questionList[selectedIndex].question);
                         break;
-                case 3: editChoice ("choice 1", questionList[selectedIndex].choice1, questionList[selectedIndex].answer);
+                case 3: editField ("choice 1", questionList[selectedIndex].choice1);
                         break;
-                case 4: editChoice ("choice 2", questionList[selectedIndex].choice2, questionList[selectedIndex].answer);
+                case 4: editField ("choice 2", questionList[selectedIndex].choice2);
                         break;
-                case 5: editChoice ("choice 3", questionList[selectedIndex].choice3, questionList[selectedIndex].answer);
+                case 5: editField ("choice 3", questionList[selectedIndex].choice3);
                         break;
                 case 6: editField ("answer", questionList[selectedIndex].answer);
                         break;
             }
+        /*
+        if its case 3 4 5
+        check if same with answer
+        if same with answer, display message
+        check user input
+        input validation (1 or 0)
+        if 1, 
+            edit the field of choice
+            edit the answer
+        if 0, go back to fields display
 
-            //how many times the user has gone back to edit menu
+        if di naman din same w answer ung choice, just edit
+        int nInput
+        **may var na choiceNum
+        if (!strcmp(questionList[selectedIndex].choice1, questionList[selectedIndex].answer)) //if equal ung choice and answer
+        {
+            printf("\nThis choice contains the correct answer. Editing this choice will automatically edit the answer.\nDo you wish to proceed?");
+            printf("\n1 - Proceed\n0 - Cancel");
+            nInput = getIntInput (0,1);
+            if (nInput){
+                //edit answer n choice
+               printf("Input the new content of question %d choice %d and answer", questionList[selectedIndex].questionNum, choiceNum);
+               gets(questionList[selectedIndex].choice1);
+               gets(questionList[selectedIndex].choice1);
+               strcpy (questionList[selectedIndex].answer, questionList[selectedIndex].choice1);
+
+            }
+            else{
+                nInput = 0;
+            }
+        }
+        else
+            **edit the field normally
+             gets(questionList[selectedIndex].choice1);
+               gets(questionList[selectedIndex].choice1);
+        
+        */
+            printf("\nRecord edited successfully!\n\n");
             nLoopCtr ++;
         }
-    }         
-}
+    } 
+       
+     
+}//TO ADD: INPUT VALIDATION FOR EVERY QUESTIO

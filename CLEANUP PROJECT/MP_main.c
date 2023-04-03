@@ -175,7 +175,7 @@ void manageFunc (string30 password,  questionFormat A[], int *s, FILE *fp){
             {
                 case 1: *s = addRecord(A, *s);   break; //REMOVE PRINT AFTER, ONLY FOR TTEST printInFile(A, *s, fp);
                 case 2:   editRecord(A, *s); break;// to add 2, 3, 5
-                case 3: *s = deleteRecord(A, *s); printInFile(A, *s, fp);  break;
+                case 3: *s = deleteRecord(A, *s);  break;
                 case 4: *s = importData(A, fp); break;
                 case 5: exportData(A, *s, fp); break;
             }

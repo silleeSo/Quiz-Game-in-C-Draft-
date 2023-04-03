@@ -2,9 +2,9 @@ Geography
 1
 Which country features a shipwreck on its national flag?
 Vanuatu
-Vietnam
+Bermuda
 Croatia
-Vietnam
+Bermuda
 
 Geography
 2
@@ -149,4 +149,3 @@ Ant
 Butterfly
 Wasp
 Wasp
-

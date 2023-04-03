@@ -32,6 +32,8 @@ typedef struct {
 
 
 void catCharacter(char *strPointer, int *strIndex, char cNewChar);
+void editField(char *fieldName, char *field);
+int getIntInput (int nLowerBound, int nUpperBound);
 int addRecord( questionFormat *questionList, int nNumOfQues);
 int importData( questionFormat *questionList, FILE *filePointer);
 void exportData( questionFormat *questionList, int nNumOfQues, FILE *filePointer);
