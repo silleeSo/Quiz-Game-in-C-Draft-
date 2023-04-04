@@ -6,11 +6,11 @@
 //MANAGE
 
 void 
-catCharacter(char *strPointer, int *strIndex, char cNewChar)
+catCharacter(char *strPointer, int *nIndexStr, char cNewChar)
 {
-    strPointer[*strIndex] = cNewChar;      // set the value of a character in a string (of array struct element) to ch (where ch is a character read from file)
-    *strIndex += 1;              //increment the string index
-    strPointer[*strIndex] = '\0';    //concatenate null byte
+    strPointer[*nIndexStr] = cNewChar;      // set the value of a character in a string (of array struct element) to ch (where ch is a character read from file)
+    *nIndexStr += 1;              //increment the string index
+    strPointer[*nIndexStr] = '\0';    //concatenate null byte
 }
 
 void 
@@ -22,7 +22,6 @@ editField(char *fieldName, char *field)
     printf("\nRecord edited successfully!\n\n");
                 
 }
-
 
 int 
 getIntInput (int nLowerBound, int nUpperBound)
@@ -63,14 +62,44 @@ void editChoice(char *strChoiceName, char *strChoice,  char *strAnswer)
         editField(strChoiceName, strChoice);      
 }
         
+int 
+createArrayOfTopics (string20 *topics, questionFormat *questionList, int nNumOfQues){
+        //reset variables
+        int nCtrTopics = 0, bQuesExists = 0; 
 
+        //CREATE AN ARRAY OF EXISTING TOPICS:
+        //loop through array of questions
+        for (int i = 0; i < nNumOfQues; i++)
+        {
+            //loop through array of existing topics
+            for (int j = 0; j < nCtrTopics; j++)
+
+                //check if the topic current question in loop already exists in the array of topics
+                if (!strcmp(questionList[i].topic, topics[j])) 
+
+                    //if it does exist, set bQuesExists to 1 (true)
+                    bQuesExists = 1;
+            
+            //after looping through the array of topics, if it stil doesn't exist, add it to array of topics 
+            if (!bQuesExists) 
+            {
+                strcpy(topics[nCtrTopics], questionList[i].topic); 
+                nCtrTopics++;
+            }
+
+            //reset flag variable
+            bQuesExists = 0; 
+        }
+        return nCtrTopics;
+}
+        
 int 
 addRecord( questionFormat *questionList, int nNumOfQues) //start from index after last element, add question (s - number of existing questions/ records)
 {
     //declare variables   
     string150 question;
     string30 answer;
-    int exists, nInput, lastQuesNum = 0;
+    int exists, nInput, lastQuesNum = 0, bAnsIsInChoices = 0;
     
     do{
         nInput = 1;
@@ -110,13 +139,30 @@ addRecord( questionFormat *questionList, int nNumOfQues) //start from index afte
             //get the remaining information needed (topic)
             printf("Enter the topic of the question: ");
             gets(questionList[nNumOfQues].topic);
-            printf("Enter choice 1: ");
-            gets(questionList[nNumOfQues].choice1);
-            printf("Enter choice 2: ");
-            gets(questionList[nNumOfQues].choice2);
-            printf("Enter choice 3: ");
-            gets(questionList[nNumOfQues].choice3);
 
+            //loop while answer is not in the choices
+            while (bAnsIsInChoices == 0)
+            {
+                //ask for input on the choices
+                printf("Enter choice 1: ");
+                gets(questionList[nNumOfQues].choice1);
+                printf("Enter choice 2: ");
+                gets(questionList[nNumOfQues].choice2);
+                printf("Enter choice 3: ");
+                gets(questionList[nNumOfQues].choice3);
+
+                //compare answer with each choice, and if one of them is equal, set flag variable to 1 (it is present)
+                if (!strcmp (questionList[nNumOfQues].choice1, questionList[nNumOfQues].answer ) || 
+                !strcmp (questionList[nNumOfQues].choice2, questionList[nNumOfQues].answer ) || 
+                !strcmp (questionList[nNumOfQues].choice3, questionList[nNumOfQues].answer ))
+                    bAnsIsInChoices = 1;
+
+                //if the answer is not in choices, display notifying message and continue loop (asking user to re-enter choices)
+                if (!bAnsIsInChoices){
+                    printf("\nAnswer is not part of choices! Please re-enter the question choices\n");
+                }
+            }
+           
         //automatically set the question number:
             //last question number has been initialized to 0
             lastQuesNum = 0;
@@ -272,53 +318,27 @@ exportData( questionFormat *questionList, int nNumOfQues, FILE *filePointer)
     printf("\nData exported successfully!\n");
 }
 
-//QUERIES
-//if no record paano?? display warning?
-//ADD VALIDATION NA PAG INPUT IF ZERO KASO FIRST CYCLE PALANG NAMAN - gud
-// ADD VALIDATION IF NO RECORDS TAS U TRY TO EDIT - gud
-// the choices
-void editRecord( questionFormat *questionList, int nNumOfQues){
+void 
+editRecord( questionFormat *questionList, int nNumOfQues){
     //create array of topics
     string20 topics[nNumOfQues];
     string20 selectedTopic;                                     //index of the selected question in the array 
-    int ctrTopics, bQuesExists, nInput, selectedIndex, nLoopCtr = 0, nMinInput = 1, nHighestQuesNum; //counter for topics array
+    int ctrTopics, nInput, nSelectedIndex, nLoopCtr = 0, nMinInput = 1, nHighestQuesNum; //counter for topics array
    
     //if there are no existing records yet for the user to edit, display notifying message and set nInput to zero - meaning go back to menu
     if (nNumOfQues == 0)
     {
-        printf("No existing records to edit!");
+        printf("\nNo existing records to edit!\n");
         nInput = 0;
     }
     while (nInput!=0)
     {
-        //reset variables
-        ctrTopics = 0, bQuesExists = 0, selectedIndex = 0; 
+        //reset the index of selected question
+        nSelectedIndex = 0; 
 
-        //CREATE AN ARRAY OF EXISTING TOPICS:
-        //loop through array of questions
-        for (int i = 0; i < nNumOfQues; i++)
-        {
-            //loop through array of existing topics
-            for (int j = 0; j < ctrTopics; j++)
-
-                //check if the topic current question in loop already exists in the array of topics
-                if (!strcmp(questionList[i].topic, topics[j])) 
-
-                    //if it does exist, set bQuesExists to 1 (true)
-                    bQuesExists = 1;
-            
-            //after looping through the array of topics, if it stil doesn't exist, add it to array of topics 
-            if (!bQuesExists) 
-            {
-                strcpy(topics[ctrTopics], questionList[i].topic); 
-                ctrTopics++;
-            }
-
-            //reset flag variable
-            bQuesExists = 0; 
-        }
-
-    //Note: ctrTopics is equivalent to the size of topics array
+        /*CREATE AN ARRAY OF EXISTING TOPICS:
+        Note: ctrTopics is equivalent to the size of topics array*/
+        ctrTopics = createArrayOfTopics(topics, questionList, nNumOfQues);
     
         //if one edit has already been made, add new option to go back to manage menu
         if (nLoopCtr > 0)
@@ -359,13 +379,12 @@ void editRecord( questionFormat *questionList, int nNumOfQues){
             }
 
             //accept user input (equivalent to question number) w/ validation
-           nInput =  getIntInput(1, nHighestQuesNum);
+            nInput =  getIntInput(1, nHighestQuesNum);
 
             //loop to get index of selected question
-            while (questionList[selectedIndex].questionNum != nInput || strcmp(questionList[selectedIndex].topic, selectedTopic) != 0)
-                selectedIndex++; 
+            while (questionList[nSelectedIndex].questionNum != nInput || strcmp(questionList[nSelectedIndex].topic, selectedTopic) != 0)
+                nSelectedIndex++; 
         
-            //while (nInput != 0)
             //ask user for the field to edit
             printf("Which field would you like to edit?\n1 - Topic\n2 - Question\n3 - choice 1\n4 - choice 2\n5 - choice 3\n6 - answer\n");
            
@@ -374,17 +393,17 @@ void editRecord( questionFormat *questionList, int nNumOfQues){
             //based on the user input, ask for new content in specified field
             switch (nInput)
             {
-                case 1: editField ("topic", questionList[selectedIndex].topic);
+                case 1: editField ("topic", questionList[nSelectedIndex].topic);
                         break;
-                case 2: editField ("question", questionList[selectedIndex].question);
+                case 2: editField ("question", questionList[nSelectedIndex].question);
                         break;
-                case 3: editChoice ("choice 1", questionList[selectedIndex].choice1, questionList[selectedIndex].answer);
+                case 3: editChoice ("choice 1", questionList[nSelectedIndex].choice1, questionList[nSelectedIndex].answer);
                         break;
-                case 4: editChoice ("choice 2", questionList[selectedIndex].choice2, questionList[selectedIndex].answer);
+                case 4: editChoice ("choice 2", questionList[nSelectedIndex].choice2, questionList[nSelectedIndex].answer);
                         break;
-                case 5: editChoice ("choice 3", questionList[selectedIndex].choice3, questionList[selectedIndex].answer);
+                case 5: editChoice ("choice 3", questionList[nSelectedIndex].choice3, questionList[nSelectedIndex].answer);
                         break;
-                case 6: editField ("answer", questionList[selectedIndex].answer);
+                case 6: editField ("answer", questionList[nSelectedIndex].answer);
                         break;
             }
 
@@ -392,4 +411,160 @@ void editRecord( questionFormat *questionList, int nNumOfQues){
             nLoopCtr ++;
         }
     }         
+}
+
+int 
+deleteRecord( questionFormat *questionList, int nNumOfQues){
+    //create array of topics
+    string20 topics[nNumOfQues];
+    string20 selectedTopic;                                     //index of the selected question in the array 
+     //counter for topics array
+    int   nPrevQuesNum = 0, ctrTopics, nInput = 1, nSelectedIndex, nHighestQuesNum;
+
+    if (nNumOfQues == 0)
+    {
+        printf("\nNo existing delete to edit!\n");
+        nInput = 0;
+    }
+    while (nInput!=0)
+    {
+        //reset index of selected question
+        nSelectedIndex = 0;
+
+        //create array of topics
+        ctrTopics = createArrayOfTopics(topics, questionList, nNumOfQues);
+
+        printf("0 - Go back to main menu\n");
+        printf("Select a Topic: \n");
+
+        //display topics
+        for (int i = 0; i < ctrTopics; i++)
+            printf("%d - %s\n", i+1, topics[i]);
+        
+        //get user input with validation
+        nInput = getIntInput (0, ctrTopics);
+
+        if (nInput != 0)
+        {
+            /*Define selectedTopic by copying the topic from the topics array
+              minus 1 since index starts at 0, input starts at 1 lowest*/
+            strcpy(selectedTopic, topics[nInput-1]); 
+
+            //display questions from the selected topic and get highest question number
+            printf("Enter a question number: \n");
+            for (int i = 0; i < nNumOfQues; i++)
+            {
+                //check if the selected topic is the same as the topic of the current question in loop
+                if (!strcmp(questionList[i].topic, selectedTopic))
+                {
+                    printf("Question %d - %s\n", questionList[i].questionNum , questionList[i].question);
+                    nHighestQuesNum = questionList[i].questionNum;
+                }                 
+            }
+     
+            nInput =  getIntInput(1, nHighestQuesNum);
+
+            /* GET THE INDEX (IN QUESTIONLIST ARRAY) OF THE SELECTED QUESTION 
+            while the question number of the current question in loop is not the same as the selected question number
+            OR while the topic of the currrent question in loop is not the same as selected topic
+            increment nSelectedIndex*/
+            while (questionList[nSelectedIndex].questionNum != nInput || strcmp(questionList[nSelectedIndex].topic, selectedTopic) != 0)   //take question index in 1d array
+                nSelectedIndex++;
+        
+            //UP TO HERE SAME W EDIT !!!
+            //at this point, nInput is still = ques num
+            printf("Are you sure you want to delete question number %d of %s?\n0 - No\n1 - Yes\n", nInput, selectedTopic);
+            nInput = getIntInput(0, 1);
+       
+            //If user selects 1 (yes)
+            if (nInput)
+            {
+
+                /*Move question numbers to the next question
+                Initialize Previous question number to the question number of selected question */
+                nPrevQuesNum = questionList[nSelectedIndex].questionNum;
+
+                //loop through question array starting from the question after the selected questioon
+                for (int i = nSelectedIndex + 1; i <nNumOfQues; i++)
+                {
+                    //if the topic of the selected question is equal to the topic of the current question in loop
+                    if (!strcmp(questionList[nSelectedIndex].topic, questionList[i].topic))
+                    {
+                        /*set the question number of the current question in loop TO the previous question number (in the specified topic)
+                        then increment nPrevQuesNum*/
+                        questionList[i].questionNum = nPrevQuesNum;
+                        nPrevQuesNum++;
+                    }
+                }
+
+                //overwrite the selected question struct by copying next question in the topic TO the current question in the same topic
+                for (int i = nSelectedIndex; i < nNumOfQues; i++)
+                    questionList[i] = questionList[i+1];
+
+                //subtract question number by one 
+                nNumOfQues--;
+
+                printf("\n Record deleted successfully!\n");
+                     
+            }
+            printf("\n0 - Go back to manage data menu\n1 - Delete another record\n");
+
+            //get input with validation
+            nInput = getIntInput(0, 1);  
+        }          
+    }
+    return nNumOfQues;
+}
+
+void 
+manageFunc (string30 password,  questionFormat *questionList, int *nNumOfQues, FILE *filePointer){
+    //declare variables
+    string30 strInput;
+    int nInput = 0;
+    int i =0;
+    //char ch;
+
+    // for new line
+    scanf("%c", strInput); 
+    printf("Enter the password: ");
+    gets(strInput);
+
+    while(strcmp(password, strInput)!= 0 && nInput == 0){ //test if password is not the same, nInput = 0 means that user wants to try again
+        printf("Incorrect Password\n0 - Try again\n1 - Go back to main menu\n");
+        nInput = getIntInput (0, 1);
+        if (nInput == 0){
+            printf("Enter the password: ");
+            gets(strInput);
+        }
+        gets(strInput); //for newline
+     }
+
+    if ( nInput == 0){ 
+
+        // if the the nInput remains as 0 (use tried again/ user did not pick to go back)
+        do{ 
+            /*while the user doesnt choose to go back to main menu from manage data menu
+            display menu list*/
+            printf("\nMANAGE DATA MENU\n"); 
+            printf("1: Add a record\n");
+            printf("2: Edit a record\n");
+            printf("3: Delete a record\n");
+            printf("4: Import data\n");
+            printf("5: Export data\n");
+            printf("6: Go back to main menu\n");
+
+            //get input with validation
+            nInput = getIntInput(1, 6);
+              
+            switch (nInput) //switch case for user input from manage data
+            {
+                case 1: *s = addRecord(questionList, *nNumOfQues);   break; //REMOVE PRINT AFTER, ONLY FOR TTEST printInFile(A, *s, fp);
+                case 2:   editRecord(questionList, *nNumOfQues); break;// to add 2, 3, 5
+                case 3: *s = deleteRecord(questionList, *nNumOfQues);  break;
+                case 4: *s = importData(questionList, filePointer); break;
+                case 5: exportData(questionList, *s, filePointer); break;
+            }
+
+        } while (nInput != 6);  
+    }
 }
