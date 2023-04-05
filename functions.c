@@ -1,18 +1,31 @@
 #include "functions.h"
 
-// TO CLEAN: IMPORT, EDIT, DELETE, PLAY
-// TO ORGANIZE: ALL
+//1. SELF-DEFINED FUNCTIONS USED IN PROCEEDING FUNCTIONS
 
-// MANAGE
-
+/* catCharacter concatenates a given character to a given string based on a specified index
+@param *givenString - character pointer to the first character of the string
+@param *nIndexStr - pointer to the string index (used so that whatever changes applied to *nIndexStr reflect in main)
+@param cNewChar - the character to concatenate to a string
+Pre-condition: *nIndexStr was defined before function call and is not greater than or equal to the max length of the string
+*/
 void 
-catCharacter(char *strPointer, int *nIndexStr, char cNewChar)
+catCharacter(char *givenString, int *nIndexStr, char cNewChar)
 {
-    strPointer[*nIndexStr] = cNewChar; // set the value of a character in a string (of array struct element) to ch (where ch is a character read from file)
-    *nIndexStr += 1;                   // increment the string index
-    strPointer[*nIndexStr] = '\0';     // concatenate null byte
+    // set the value of a character in a string (of array struct element) to ch (where ch is a character read from file)
+    givenString[*nIndexStr] = cNewChar; 
+
+    // increment the string index
+    *nIndexStr += 1;             
+
+     // concatenate null byte     
+    givenString[*nIndexStr] = '\0';    
 }
 
+/* editField asks the user for the new content of a specified field, stores it, and displays a notifying message
+@param *fieldName - the specified field (string/ character pointer)
+@param *field - where to store the new content of the field (string/ character pointer)
+Pre-condition: *fieldName and *field are both valid
+*/
 void 
 editField(char *fieldName, char *field)
 {
@@ -22,6 +35,12 @@ editField(char *fieldName, char *field)
     printf("\nRecord edited successfully!\n\n");
 }
 
+/* getIntInput asks the user for an integer input and validates it by using a range of valid inputs
+@param nLowerBound - the minimum valid input
+@param nUpperBound - the minimum valid input
+@returns the valid user input
+Pre-condition: nLowerBound and nUpperBound are both defined before this function is called
+*/
 int 
 getIntInput(int nLowerBound, int nUpperBound)
 {
@@ -31,13 +50,18 @@ getIntInput(int nLowerBound, int nUpperBound)
     while ((int)nInput < nLowerBound || (int)nInput > nUpperBound)
     {
         // Clear the stdin so that program won't keep reading the wrong input ^-^
-        while ((character = getchar()) != '\n' && character != EOF)
-            ;
+        while ((character = getchar()) != '\n' && character != EOF);
         printf("Invalid input, try again: ");
         scanf("%d", &nInput);
     }
 }
 
+/* editChoice edits a question choice after validation. It covers edge cases, such as if the user chooses to edit the choice containing the answer 
+@param *strChoiceName - the choice name in the form of a string ("choice 1"/ "choice 2"/ "choice 3")
+@param *strChoice - the content of the choice
+@param *strAnswer - the answer to the question
+Pre-condition: question answer and choice must be initialized or defined before calling this function
+*/
 void 
 editChoice(char *strChoiceName, char *strChoice, char *strAnswer)
 {
@@ -63,6 +87,13 @@ editChoice(char *strChoiceName, char *strChoice, char *strAnswer)
         editField(strChoiceName, strChoice);
 }
 
+/* createArrayOfTopics creates an array of existing topics based on the list of questions passed
+@param *topics - the array of topics to populate
+@param *questionList - the array of questions
+@param nNumOfQues - the number of elements/ questions in questionList array
+@returns the new (int)size of topics array 
+Pre-condition: question list must be populated
+*/
 int 
 createArrayOfTopics(string20 *topics, questionFormat *questionList, int nNumOfQues)
 {
@@ -95,6 +126,9 @@ createArrayOfTopics(string20 *topics, questionFormat *questionList, int nNumOfQu
     return nCtrTopics;
 }
 
+/* getPasswordInput accepts user input for password field and masks the text using asterisks
+@param strInput - string variable where characters will be stored
+*/
 void 
 getPasswordInput(string30 strInput)
 {
@@ -137,18 +171,53 @@ getPasswordInput(string30 strInput)
     } while (strlen(strInput) < 1 || (strlen(strInput) <= 30 && cInput != '\r'));
 }
 
+/* getLastQuesNum gets the last question number in a specified topic
+@param *questionList - the list of questions
+@param nNumOfQues - the size or number of question in questionList
+@param selectedTopic - the specified topic to search
+@returns the last question number in the topic of the newly added question
+Pre-condition: question list must be populated, or it will return 0
+*/
 int 
-addRecord(questionFormat *questionList, int nNumOfQues) // start from index after last element, add question (s - number of existing questions/ records)
+getLastQuesNum(questionFormat *questionList, int nNumOfQues, string20 selectedTopic)
+{
+    int nLastQuesNum = 0;
+
+    // loop through the array of structs (questions/records)
+    for (int i = 0; i < nNumOfQues; i++) 
+
+        /*if the current question in loop has the same topic (as the added question) and a higher question number
+        Note: nNumOfQues = index of the newly addded question*/
+        if (!strcmp(questionList[i].topic, selectedTopic) && questionList[i].questionNum > nLastQuesNum)
+
+            // set the last question number to question number of current question in loop
+            nLastQuesNum = questionList[i].questionNum; 
+
+    return nLastQuesNum;
+}
+        
+
+//2. FUNCTIONS CALLED IN manageFunc()
+
+/* addRecord asks user to input content for a new question and stores it in question list
+@param *questionList - the list of questions
+@param nNumOfQues - the size or number of question in questionList
+@returns the new number of questions in questionList
+Pre-condition: question list must be populated, or it will return 0
+*/
+int 
+addRecord(questionFormat *questionList, int nNumOfQues) 
 {
     // declare variables
     string150 question;
     string30 answer;
-    int exists, nInput, lastQuesNum = 0, bAnsIsInChoices = 0;
+    string20 questionTopic;
+    int bExists, nInput, nLastQuesNum = 0, bAnsIsInChoices = 0;
 
     do
     {
         nInput = 1;
-        exists = 0;
+        bExists = 0;
         // Ask for question to add
         printf("Enter a question: ");
         gets(question); // excess for newline
@@ -162,11 +231,11 @@ addRecord(questionFormat *questionList, int nNumOfQues) // start from index afte
         for (int i = 0; i < nNumOfQues; i++)
         {
             if (!strcmp(questionList[i].question, question) && !strcmp(questionList[i].answer, answer))
-                exists = 1;
+                bExists = 1;
         }
 
         // if record exists, print message and end function, getting back to manage data
-        if (exists == 1)
+        if (bExists == 1)
         {
             printf("\nRecord already exists!\n"); // notify user that question and answer already exist
             printf("0 - Go back to manage menu\n1 - Try again\n");
@@ -209,17 +278,12 @@ addRecord(questionFormat *questionList, int nNumOfQues) // start from index afte
                 }
             }
 
-            // automatically set the question number:
-            // last question number has been initialized to 0
-            lastQuesNum = 0;
-
-            for (int i = 0; i < nNumOfQues; i++) // loop through the array of structs (questions/records)
-                // if the current question in loop has the same topic (as the added question) and a higher question number
-                if (!strcmp(questionList[i].topic, questionList[nNumOfQues].topic) && questionList[i].questionNum > lastQuesNum)
-                    lastQuesNum = questionList[i].questionNum; // set the last question number to question number of current question in loop
+            // automatically set the question number by first getting the last question num in the same topic
+            strcpy(questionTopic, questionList[nNumOfQues].topic);
+            nLastQuesNum = getLastQuesNum(questionList, nNumOfQues, questionTopic);
 
             // after getting the last question number,add one to it and set it as the question number of the newly added question
-            questionList[nNumOfQues].questionNum = lastQuesNum + 1;
+            questionList[nNumOfQues].questionNum = nLastQuesNum + 1;
 
             // increment the size of array (of questions/records)
             nNumOfQues++;
@@ -233,13 +297,21 @@ addRecord(questionFormat *questionList, int nNumOfQues) // start from index afte
     return nNumOfQues; // return new array size
 }
 
+/* importData imports questions stored in a user-given text file and stores it in questionList
+@param *questionList - the list of questions
+@param nNumOfQues - the size or number of question in questionList
+@param *filePointer - file pointer to the file to import
+@returns the new number of questions in questionList
+Pre-condition: file to import must be populated or nothing will be imported
+*/
 int 
-importData(questionFormat *questionList, FILE *filePointer)
+importData(questionFormat *questionList, int nNumOfQues, FILE *filePointer)
 {
 
     // declare variables
     string30 fileName;
-    int nPosition = 0, strInd = 0, nArrayInd = 0, nInput = 1; // CHANGE ARRAY INDEX N SET TO S IF EVER MAM SAYS NA NEED LANG APPEND, NOT REWRITE
+    string20 questionTopic;
+    int nPosition = 0, strInd = 0, nArrayInd = nNumOfQues, nInput = 1; // CHANGE ARRAY INDEX N SET TO S IF EVER MAM SAYS NA NEED LANG APPEND, NOT REWRITE
     char cCurrentChar;
 
     // ask for filename and validate
@@ -311,7 +383,8 @@ importData(questionFormat *questionList, FILE *filePointer)
                 // set the question num (of struct array element) to ch converted to int - 48
                 //  Note: 1 was read as '1', meaning if we convert to int it is == 49. Subtracting 48 results to 1.
                 case 1:
-                    questionList[nArrayInd].questionNum = (int)cCurrentChar - 48;
+                    strcpy(questionTopic, questionList[nArrayInd].topic);
+                    questionList[nArrayInd].questionNum = getLastQuesNum(questionList, nArrayInd, questionTopic) + 1;
                     break;
                 case 2:
                     catCharacter(questionList[nArrayInd].question, &strInd, cCurrentChar); // Question Line
@@ -344,6 +417,12 @@ importData(questionFormat *questionList, FILE *filePointer)
     return nArrayInd;
 }
 
+/* exportData exports questions stored in questionList to a text file (given by user)
+@param *questionList - the list of questions
+@param nNumOfQues - the size or number of question in questionList
+@param *filePointer - file pointer to the file to export to
+Pre-condition: questionList must be populated or nothing will be exported
+*/
 void 
 exportData(questionFormat *questionList, int nNumOfQues, FILE *filePointer)
 {
@@ -373,6 +452,11 @@ exportData(questionFormat *questionList, int nNumOfQues, FILE *filePointer)
     printf("\nData exported successfully!\n");
 }
 
+/* editRecord allsows the user to edit a field in a specific question
+@param *questionList - the list of questions
+@param nNumOfQues - the size or number of question in questionList
+Pre-condition: questionList must be populated or the function will only display a message
+*/
 void 
 editRecord(questionFormat *questionList, int nNumOfQues)
 {
@@ -475,6 +559,12 @@ editRecord(questionFormat *questionList, int nNumOfQues)
     }
 }
 
+/* deleteRecord allows the user to delete a specific question
+@param *questionList - the list of questions
+@param nNumOfQues - the size or number of question in questionList
+@returns the new number of questions in questionList
+Pre-condition: questionList must be populated or the function will only display a message
+*/
 int 
 deleteRecord(questionFormat *questionList, int nNumOfQues)
 {
@@ -578,6 +668,175 @@ deleteRecord(questionFormat *questionList, int nNumOfQues)
     return nNumOfQues;
 }
 
+
+//3. FUNCTIONS CALLED IN playFunc()
+
+/* playGame allows the user to play the quiz game, answering the questions from questionList
+@param *questionList - the list of questions
+@param nNumOfQues - the size or number of questions in questionList
+@param timeVar - time variable used for randomization
+@param nLeaderboardSize - the size or number of entries of leaderboard
+@param *leaderboard - pointer to leaderboard array
+@returns the new number of questions in questionList
+Pre-condition: questionList must be populated or the function will only display a message
+*/
+int 
+playGame(questionFormat *questionList, int nNumOfQues, time_t timeVar, int nLeaderboardSize, leaderBoardFormat *leaderboard)
+{
+    // declare and define variables
+    string20 topics[nNumOfQues];
+    string20 selectedTopic;
+    int nCtrTopics = 0, nInput, nCorrectAnswer, nLastQuesNum = 0, nRandQuesInd, bIsfound = 0, nQuesIndex = 0; // reset variables
+
+    // get seed from time
+    srand(time(&timeVar));
+     if (nNumOfQues == 0)
+    {
+        printf("\nNo existing records to use in game!\n");
+        nInput = 0;
+    }
+    if (nInput != 0)
+    {
+        // initialize score for this round as 0
+        leaderboard[nLeaderboardSize].score = 0;
+
+        // create array of topics
+        nCtrTopics = createArrayOfTopics(topics, questionList, nNumOfQues);
+
+        // ask for name
+        printf("Please enter your name: ");
+        scanf("%s", leaderboard[nLeaderboardSize].name); // get name and store it to the current leaderboard row
+
+        do
+        {
+            printf("\nSelect a topic\n");
+
+            // display the topics
+            for (int i = 0; i < nCtrTopics; i++)
+                printf("%d - %s\n", i + 1, topics[i]);
+
+            // print score
+            printf("Score: %d\n", leaderboard[nLeaderboardSize].score);
+
+            // get input (for which topic) with validation
+            nInput = getIntInput(1, nCtrTopics);
+
+            /*by this time, hindi na 0 yung input
+            Note: minus 1 since index starts at 0, input starts at 1 lowest*/
+            strcpy(selectedTopic, topics[nInput - 1]);
+
+            //get last question num in that topic
+            nLastQuesNum = getLastQuesNum(questionList, nNumOfQues, selectedTopic);
+
+            // generate random odd value from 1 to last question num
+            int nRandomNum = rand() % (nLastQuesNum + 1);
+
+            // if random value generated happens to be 0, increment so it becomes 1 (a valid number)
+            if (nRandomNum == 0)
+                nRandomNum++;
+
+            // reset question list index and flag variable
+           nQuesIndex = 0;
+           bIsfound = 0;
+
+            // based on the index inputted, loop through array to get the corresponding question with the same topic ad the random num generated
+            while (!bIsfound)
+            {
+                /*if the current question in loop has same topic as the selected topic
+                and its question num is the same as the random number generated, then save its index for later use
+                - Set flag variable to 1 when found*/
+                if (!strcmp(questionList[nQuesIndex].topic, selectedTopic) && questionList[nQuesIndex].questionNum == nRandomNum)
+                {
+                    nRandQuesInd = nQuesIndex;
+                    bIsfound = 1;
+                }
+                // increment question list index with every loop
+                nQuesIndex++;
+            }
+
+            // display question
+            printf("\nYour question is...Random number = %d, Topic = %s, nRandQuesInd = %d\n\n%s\n", nRandomNum, selectedTopic, nRandQuesInd, questionList[nRandQuesInd].question);
+
+            // print answer, accept input
+            printf("1 - %s\n2 - %s\n3 - %s\nAnswer (1-3): ", questionList[nRandQuesInd].choice1, questionList[nRandQuesInd].choice2, questionList[nRandQuesInd].choice3);
+            printf("\nScore: %d\n", leaderboard[nLeaderboardSize].score);
+            nInput = getIntInput(1, 3);
+
+            // check which choice is supposed to be the right answer
+            if (!strcmp(questionList[nRandQuesInd].choice1, questionList[nRandQuesInd].answer))
+                nCorrectAnswer = 1;
+            else if (!strcmp(questionList[nRandQuesInd].choice2, questionList[nRandQuesInd].answer))
+                nCorrectAnswer = 2;
+            else
+                nCorrectAnswer = 3;
+
+            // if input is the same as the correct answer
+            if (nInput == nCorrectAnswer)
+            {
+                // 1. print
+                printf("\nCorrect! (+5 pnts)");
+                // 2. add score
+                leaderboard[nLeaderboardSize].score += 5;
+            }
+            else
+                printf("\nSorry! Wrong answer.");
+
+            // print updated score, give user option to continue or end game
+            printf("\n\nScore: %d\n\n0 - End game\n1 - Next question\n", leaderboard[nLeaderboardSize].score);
+            nInput = getIntInput(0, 1);
+
+            // loop until user does not choose to end game
+        } while (nInput != 0);
+
+        // after game ends
+        printf("\nCONGRATULATIONS, YOUR FINAL SCORE IS: %d\n\n", leaderboard[nLeaderboardSize].score);
+        // return incremented leaderboard size
+        nLeaderboardSize++;
+    }
+
+    return nLeaderboardSize;
+}
+
+/*viewScores prints the leaderboard with player name and accumulated score from one round
+@param *leaderboard - the leaderboard or list of leaderboard entires
+@param nLeaderboardSize - the number of leaderboard entries
+Pre-condition: leaderboard must be populated or the function will only display message
+*/
+void 
+viewScores(int nLeaderboardSize, leaderBoardFormat *leaderboard)
+{
+
+    //declare variable for user int input
+    int nInput;
+
+    if (nLeaderboardSize == 0)
+        printf ("\n\nNo existing entries to display!\n\n");
+    
+    else{
+        //print header
+        printf("Row\tPlayer Name\tScore\n");
+
+        //print name and scores
+        for(int i = 0; i < nLeaderboardSize; i++)
+            printf("%d%+17s\t%d\n", i+1, leaderboard[i].name, leaderboard[i].score );
+    
+        printf("\nPress 0 to go back: ");
+
+        //get int input with validation
+        nInput = getIntInput(0, 0);
+    }
+    
+}
+
+//4. FUNCTIONS CALLED IN MAIN
+
+/* manageFunc displays the manage menu, accepts user input, and calls a corresponding function based on user input
+@param password - the correct password
+@param *questionList - the list of questions
+@param nNumOfQues - the size or number of questions in questionList
+@param *filePointer - file pointer to pass in importData() and exportData()
+Pre-condition: correct password required before proceeding
+*/
 void 
 manageFunc(string30 password, questionFormat *questionList, int *nNumOfQues, FILE *filePointer)
 {
@@ -637,7 +896,7 @@ manageFunc(string30 password, questionFormat *questionList, int *nNumOfQues, FIL
                 *nNumOfQues = deleteRecord(questionList, *nNumOfQues);
                 break;
             case 4:
-                *nNumOfQues = importData(questionList, filePointer);
+                *nNumOfQues = importData(questionList, *nNumOfQues, filePointer);
                 break;
             case 5:
                 exportData(questionList, *nNumOfQues, filePointer);
@@ -648,142 +907,17 @@ manageFunc(string30 password, questionFormat *questionList, int *nNumOfQues, FIL
     }
 }
 
-int 
-playGame(questionFormat *questionList, int nNumOfQues, time_t timeVar, int leaderBoardSize, leaderBoardFormat *leaderBoard)
-{
-    // declare and define variables
-    string20 topics[nNumOfQues];
-    string20 selectedTopic;
-    int nCtrTopics = 0, nInput, nCorrectAnswer, nLastQuesNum = 0, nRandQuesInd, bIsfound = 0, nQuesIndex = 0; // reset variables
-
-    // initialize score for this round as 0
-    leaderBoard[leaderBoardSize].score = 0;
-
-    // get seed from time
-    srand(time(&timeVar));
-
-    // create array of topics
-    nCtrTopics = createArrayOfTopics(topics, questionList, nNumOfQues);
-
-    // ask for name
-    printf("Please enter your name: ");
-    scanf("%s", leaderBoard[leaderBoardSize].name); // get name and store it to the current leaderboard row
-
-    do
-    {
-        printf("\nSelect a topic\n");
-
-        // display the topics
-        for (int i = 0; i < nCtrTopics; i++)
-            printf("%d - %s\n", i + 1, topics[i]);
-
-        // print score
-        printf("Score: %d\n", leaderBoard[leaderBoardSize].score);
-
-        // get input (for which topic) with validation
-        nInput = getIntInput(1, nCtrTopics);
-
-        /*by this time, hindi na 0 yung input
-        Note: minus 1 since index starts at 0, input starts at 1 lowest*/
-        strcpy(selectedTopic, topics[nInput - 1]);
-
-        /*get last question num in that topic
-        loop through the array of questions, and everytime there is a question that matches, redefine last question number*/
-        for (nQuesIndex = 0; nQuesIndex < nNumOfQues; nQuesIndex++)
-
-            // look for the question with the same topic (as added question) with a higher number
-            if (!strcmp(questionList[nQuesIndex].topic, selectedTopic) && questionList[nQuesIndex].questionNum > nLastQuesNum)
-
-                // redefine last question num variable when conditions are passed
-                nLastQuesNum = questionList[nQuesIndex].questionNum;
-
-        // generate random odd value from 1 to last question num
-        int nRandomNum = rand() % (nLastQuesNum + 1);
-
-        // if random value generated happens to be 0, increment so it becomes 1 (a valid number)
-        if (nRandomNum == 0)
-            nRandomNum++;
-
-        // reset question list index
-        nQuesIndex = 0;
-
-        // based on the index inputted, loop through array to get the corresponding question with the same topic ad the random num generated
-        while (!bIsfound)
-        {
-            /*if the current question in loop has same topic as the selected topic
-            and its question num is the same as the random number generated, then save its index for later use
-            - Set flag variable to 1 when found*/
-            if (!strcmp(questionList[nQuesIndex].topic, selectedTopic) && questionList[nQuesIndex].questionNum == nRandomNum)
-            {
-                nRandQuesInd = nQuesIndex;
-                bIsfound = 1;
-            }
-            // increment question list index with every loop
-            nQuesIndex++;
-        }
-
-        // display question
-        printf("\nYour question is...\n\n%s\n", questionList[nRandQuesInd].question);
-
-        // print answer, accept input
-        printf("1 - %s\n2 - %s\n3 - %s\nAnswer (1-3): ", questionList[nRandQuesInd].choice1, questionList[nRandQuesInd].choice2, questionList[nRandQuesInd].choice3);
-        printf("\nScore: %d\n", leaderBoard[leaderBoardSize].score);
-        nInput = getIntInput(1, 3);
-
-        // check which choice is supposed to be the right answer
-        if (!strcmp(questionList[nRandQuesInd].choice1, questionList[nRandQuesInd].answer))
-            nCorrectAnswer = 1;
-        else if (!strcmp(questionList[nRandQuesInd].choice2, questionList[nRandQuesInd].answer))
-            nCorrectAnswer = 2;
-        else
-            nCorrectAnswer = 3;
-
-        // if input is the same as the correct answer
-        if (nInput == nCorrectAnswer)
-        {
-            // 1. print
-            printf("\nCorrect! (+5 pnts)");
-            // 2. add score
-            leaderBoard[leaderBoardSize].score += 5;
-        }
-        else
-            printf("\nSorry! Wrong answer.");
-
-        // print updated score, give user option to continue or end game
-        printf("\n\nScore: %d\n\n0 - End game\n1 - Next question\n", leaderBoard[leaderBoardSize].score);
-        nInput = getIntInput(0, 1);
-
-        // loop until user does not choose to end game
-    } while (nInput != 0);
-
-    // after game ends
-    printf("\nCONGRATULATIONS, YOUR FINAL SCORE IS: %d\n\n", leaderBoard[leaderBoardSize].score);
-    // return incremented leaderboard size
-    return leaderBoardSize + 1;
-}
-
+/* playFunc displays the play menu, accepts user input, and calls a corresponding function based on user input
+@param *questionList - the list of questions
+@param nNumOfQues - the size or number of questions in questionList
+@param timeVar - time variable used for randomization
+@param nLeaderboardSize - the size or number of entries of leaderboard
+@param *leaderboard - pointer to leaderboard array
+Pre-condition: all values passed to parameters must be valid
+*/
 void 
-viewScores(int nLeaderboardSize, leaderBoardFormat *leaderboard)
+playFunc ( questionFormat *questionList, int nNumOfQues, time_t timeVar, int *nLeaderboardSize, leaderBoardFormat *leaderBoard)
 {
-
-    //declare variable for user int input
-    int nInput;
-
-    //print header
-    printf("Row\tPlayer Name\tScore\n");
-
-    //print name and scores
-    for(int i = 0; i < nLeaderboardSize; i++)
-        printf("%d%+17s\t%d\n", i+1, leaderboard[i].name, leaderboard[i].score );
-    
-    printf("\nPress 0 to go back: ");
-
-    //get int input with validation
-    nInput = getIntInput(0, 0);
-}
-
-void 
-playFunc ( questionFormat *questionList, int nNumOfQues, time_t timeVar, int *nLeaderboardSize, leaderBoardFormat *leaderBoard){
 
     //declare varibales
     FILE *fp;
@@ -822,6 +956,7 @@ playFunc ( questionFormat *questionList, int nNumOfQues, time_t timeVar, int *nL
 
 }
 
+/* printMainMenu prints the main menu*/
 void 
 printMainMenu()
 {
