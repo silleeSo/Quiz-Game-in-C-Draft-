@@ -65,7 +65,7 @@ getIntInput(int nLowerBound, int nUpperBound)
 Pre-condition: question answer and choice must be initialized or defined before calling this function
 */
 void 
-editChoice(char *strChoiceName, char *strChoice, char *strAnswer)
+editChoice(char *strChoiceName, char *strChoice, char *strAnswer, char *altChoice1, char *altChoice2)
 {
     // declare variable for user input
     int nInput;
@@ -94,6 +94,10 @@ editChoice(char *strChoiceName, char *strChoice, char *strAnswer)
             printf("This choice can not be the same as the answer of the question!\nPlease try again: ");
             gets(strChoice);
         } 
+        while (!strcmp(strChoice, altChoice1) || !strcmp(strChoice, altChoice2)){
+            printf("Duplicate choices are not allowed!\nPlease try again: ");
+            gets(strChoice);
+        }
     }
         
 }
@@ -223,7 +227,7 @@ addRecord(questionFormat *questionList, int nNumOfQues)
     string150 question;
     string30 answer;
     string20 questionTopic;
-    int bExists, nInput, nLastQuesNum = 0, bAnsIsInChoices = 0;
+    int bExists, nInput, nLastQuesNum = 0, bAnsIsInChoices = 0, bIsDuplicate = 0;
 
     do
     {
@@ -264,10 +268,13 @@ addRecord(questionFormat *questionList, int nNumOfQues)
             // get the remaining information needed (topic)
             printf("Enter the topic of the question: ");
             gets(questionList[nNumOfQues].topic);
-
-            // loop while answer is not in the choices
-            while (bAnsIsInChoices == 0)
+            
+            // loop while answer is not in the choices or there are duplicates
+            while (bAnsIsInChoices == 0 || bIsDuplicate == 1 )
             {
+                //reset variables
+                bAnsIsInChoices = 0;
+                bIsDuplicate = 1;
                 // ask for input on the choices
                 printf("Enter choice 1: ");
                 gets(questionList[nNumOfQues].choice1);
@@ -282,11 +289,18 @@ addRecord(questionFormat *questionList, int nNumOfQues)
                     !strcmp(questionList[nNumOfQues].choice3, questionList[nNumOfQues].answer))
                     bAnsIsInChoices = 1;
 
+                if (strcmp(questionList[nNumOfQues].choice1, questionList[nNumOfQues].choice2) != 0 &&
+                strcmp(questionList[nNumOfQues].choice2, questionList[nNumOfQues].choice3) != 0 &&
+                strcmp(questionList[nNumOfQues].choice1, questionList[nNumOfQues].choice3) != 0)
+                    bIsDuplicate = 0;
+
                 // if the answer is not in choices, display notifying message and continue loop (asking user to re-enter choices)
                 if (!bAnsIsInChoices)
-                {
-                    printf("\nAnswer is not part of choices! Please re-enter the question choices\n");
-                }
+                    printf("\nAnswer is not part of choices!\n");
+                
+                else if (bIsDuplicate)
+                    printf("\nDuplicate choices are not allowed!\n");
+                printf("Please re-enter the question choices: \n");
             }
 
             // automatically set the question number by first getting the last question num in the same topic
@@ -439,28 +453,35 @@ exportData(questionFormat *questionList, int nNumOfQues, FILE *filePointer)
 {
     // declare variables
     string30 strFileName;
-
-    // ask user for filename with extension
-    printf("Import file name (txt) to export to: ");
-    scanf("%s", strFileName);
-
-    // open the file
-    filePointer = fopen(strFileName, "w");
-
-    for (int i = 0; i < nNumOfQues; i++)
+    if (nNumOfQues == 0)
     {
-        // print out each question (struct) member in this order:
-        fprintf(filePointer, "%s\n", questionList[i].topic);
-        fprintf(filePointer, "%d\n", questionList[i].questionNum);
-        fprintf(filePointer, "%s\n", questionList[i].question);
-        fprintf(filePointer, "%s\n", questionList[i].choice1);
-        fprintf(filePointer, "%s\n", questionList[i].choice2);
-        fprintf(filePointer, "%s\n", questionList[i].choice3);
-        fprintf(filePointer, "%s\n\n", questionList[i].answer);
+        printf("\nNo records to export!\n");
     }
-    // close the file
-    fclose(filePointer);
-    printf("\nData exported successfully!\n");
+    else
+    {
+        // ask user for filename with extension
+        printf("Import file name (txt) to export to: ");
+        scanf("%s", strFileName);
+
+        // open the file
+        filePointer = fopen(strFileName, "w");
+
+        for (int i = 0; i < nNumOfQues; i++)
+        {
+            // print out each question (struct) member in this order:
+            fprintf(filePointer, "%s\n", questionList[i].topic);
+            fprintf(filePointer, "%d\n", questionList[i].questionNum);
+            fprintf(filePointer, "%s\n", questionList[i].question);
+            fprintf(filePointer, "%s\n", questionList[i].choice1);
+            fprintf(filePointer, "%s\n", questionList[i].choice2);
+            fprintf(filePointer, "%s\n", questionList[i].choice3);
+            fprintf(filePointer, "%s\n\n", questionList[i].answer);
+        }
+        // close the file
+        fclose(filePointer);
+        printf("\nData exported successfully!\n");
+    }
+    
 }
 
 /* editRecord allsows the user to edit a field in a specific question
@@ -473,8 +494,10 @@ editRecord(questionFormat *questionList, int nNumOfQues)
 {
     // create array of topics
     string20 topics[nNumOfQues];
-    string20 selectedTopic;                                                              // index of the selected question in the array
-    int ctrTopics, nInput, nSelectedIndex, nLoopCtr = 0, nMinInput = 1, nHighestQuesNum; // counter for topics array
+    string20 selectedTopic;
+    string30 choice1, choice2, choice3;
+    char *correctChoice;                                                              // index of the selected question in the array
+    int ctrTopics, nInput = 1, nSelectedIndex, nLoopCtr = 0, nMinInput = 1, nHighestQuesNum; // counter for topics array
 
     // if there are no existing records yet for the user to edit, display notifying message and set nInput to zero - meaning go back to menu
     if (nNumOfQues == 0)
@@ -541,6 +564,11 @@ editRecord(questionFormat *questionList, int nNumOfQues)
 
             nInput = getIntInput(1, 6);
 
+            //copy choices to local variable for readability
+            strcpy(choice1, questionList[nSelectedIndex].choice1);
+            strcpy(choice2, questionList[nSelectedIndex].choice2);
+            strcpy(choice3, questionList[nSelectedIndex].choice3);
+
             // based on the user input, ask for new content in specified field
             switch (nInput)
             {
@@ -553,20 +581,39 @@ editRecord(questionFormat *questionList, int nNumOfQues)
                  printf("\nRecord edited successfully!\n\n");
                 break;
             case 3:
-                editChoice("choice 1", questionList[nSelectedIndex].choice1, questionList[nSelectedIndex].answer);
+                editChoice("choice 1", questionList[nSelectedIndex].choice1, questionList[nSelectedIndex].answer, choice2, choice3 );
                  printf("\nRecord edited successfully!\n\n");
                 break;
             case 4:
-                editChoice("choice 2", questionList[nSelectedIndex].choice2, questionList[nSelectedIndex].answer);
+                editChoice("choice 2", questionList[nSelectedIndex].choice2, questionList[nSelectedIndex].answer, choice1, choice3);
                  printf("\nRecord edited successfully!\n\n");
                 break;
             case 5:
-                editChoice("choice 3", questionList[nSelectedIndex].choice3, questionList[nSelectedIndex].answer);
+                editChoice("choice 3", questionList[nSelectedIndex].choice3, questionList[nSelectedIndex].answer, choice1, choice2);
                  printf("\nRecord edited successfully!\n\n");
                 break;
             case 6:
+                
+                printf("\nEditing the answer to this question will automatically edit the choice that contains it.\nDo you wish to proceed?");
+                printf("\n1 - Proceed\n0 - Cancel\n");
+            nInput = getIntInput(0, 1);
+            if (nInput)
+            {
+                
+                //find correct choice
+                if (!strcmp(questionList[nSelectedIndex].answer, questionList[nSelectedIndex].choice1))
+                    correctChoice = questionList[nSelectedIndex].choice1;
+                else if (!strcmp(questionList[nSelectedIndex].answer, questionList[nSelectedIndex].choice2))
+                    correctChoice = questionList[nSelectedIndex].choice2;
+                else if (!strcmp(questionList[nSelectedIndex].answer, questionList[nSelectedIndex].choice3))
+                    correctChoice = questionList[nSelectedIndex].choice3;
+
+                // edit answer n choice
                 editField("answer", questionList[nSelectedIndex].answer);
-                 printf("\nRecord edited successfully!\n\n");
+                strcpy(correctChoice, questionList[nSelectedIndex].answer);
+                printf("\nRecord edited successfully!\n\n");
+        }
+                 
                 break;
             }
 

@@ -38,7 +38,7 @@ editField(char *fieldName, char *field);
 int 
 getIntInput(int nLowerBound, int nUpperBound);
 void 
-editChoice(char *strChoiceName, char *strChoice, char *strAnswer);
+editChoice(char *strChoiceName, char *strChoice, char *strAnswer, char *altChoice1, char *altChoice2);
 int 
 createArrayOfTopics(string20 *topics, questionFormat *questionList, int nNumOfQues);
 void 
