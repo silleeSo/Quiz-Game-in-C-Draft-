@@ -32,7 +32,8 @@ editField(char *fieldName, char *field)
     printf("Input the new content of %s: ", fieldName);
     gets(field);
     gets(field);
-    printf("\nRecord edited successfully!\n\n");
+    //scanf("%c");
+   
 }
 
 /* getIntInput asks the user for an integer input and validates it by using a range of valid inputs
@@ -54,6 +55,7 @@ getIntInput(int nLowerBound, int nUpperBound)
         printf("Invalid input, try again: ");
         scanf("%d", &nInput);
     }
+    return nInput;
 }
 
 /* editChoice edits a question choice after validation. It covers edge cases, such as if the user chooses to edit the choice containing the answer 
@@ -83,8 +85,17 @@ editChoice(char *strChoiceName, char *strChoice, char *strAnswer)
         }
     }
     else
+    {
         // if the answer and choice are not the same, just edit the field normally (immediately accept input from user)
         editField(strChoiceName, strChoice);
+
+        //if choice and answer are suddely equal after edit, ask user to edit again
+        while (!strcmp(strChoice, strAnswer)){
+            printf("This choice can not be the same as the answer of the question!\nPlease try again: ");
+            gets(strChoice);
+        } 
+    }
+        
 }
 
 /* createArrayOfTopics creates an array of existing topics based on the list of questions passed
@@ -535,21 +546,27 @@ editRecord(questionFormat *questionList, int nNumOfQues)
             {
             case 1:
                 editField("topic", questionList[nSelectedIndex].topic);
+                 printf("\nRecord edited successfully!\n\n");
                 break;
             case 2:
                 editField("question", questionList[nSelectedIndex].question);
+                 printf("\nRecord edited successfully!\n\n");
                 break;
             case 3:
                 editChoice("choice 1", questionList[nSelectedIndex].choice1, questionList[nSelectedIndex].answer);
+                 printf("\nRecord edited successfully!\n\n");
                 break;
             case 4:
                 editChoice("choice 2", questionList[nSelectedIndex].choice2, questionList[nSelectedIndex].answer);
+                 printf("\nRecord edited successfully!\n\n");
                 break;
             case 5:
                 editChoice("choice 3", questionList[nSelectedIndex].choice3, questionList[nSelectedIndex].answer);
+                 printf("\nRecord edited successfully!\n\n");
                 break;
             case 6:
                 editField("answer", questionList[nSelectedIndex].answer);
+                 printf("\nRecord edited successfully!\n\n");
                 break;
             }
 
