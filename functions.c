@@ -210,7 +210,30 @@ getLastQuesNum(questionFormat *questionList, int nNumOfQues, string20 selectedTo
 
     return nLastQuesNum;
 }
-        
+void overwriteRecord(questionFormat *questionList, int nNumOfQues, int nSelectedIndex) 
+{
+    int nPrevQuesNum;
+     /*Move question numbers to the next question
+    Initialize Previous question number to the question number of selected question */
+    nPrevQuesNum = questionList[nSelectedIndex].questionNum;
+
+    // loop through question array starting from the question after the selected questioon
+    for (int i = nSelectedIndex + 1; i < nNumOfQues; i++)
+    {
+        // if the topic of the selected question is equal to the topic of the current question in loop
+        if (!strcmp(questionList[nSelectedIndex].topic, questionList[i].topic))
+        {
+            /*set the question number of the current question in loop TO the previous question number (in the specified topic)
+            then increment nPrevQuesNum*/
+            questionList[i].questionNum = nPrevQuesNum;
+            nPrevQuesNum++;
+        }
+    }
+
+        // overwrite the selected question struct by copying next question in the topic TO the current question in the same topic
+    for (int i = nSelectedIndex; i < nNumOfQues; i++)
+        questionList[i] = questionList[i + 1];
+}
 
 //2. FUNCTIONS CALLED IN manageFunc()
 
@@ -318,6 +341,11 @@ addRecord(questionFormat *questionList, int nNumOfQues)
         }
 
     } while (nInput == 1); // loop this until user chooses to go back to manage menu after failure to add or until a record has been addded
+
+    if (!nInput)
+    {
+        printf("\nRecord edited successfully!\n\n");
+    }
 
     return nNumOfQues; // return new array size
 }
@@ -570,10 +598,22 @@ editRecord(questionFormat *questionList, int nNumOfQues)
             strcpy(choice3, questionList[nSelectedIndex].choice3);
 
             // based on the user input, ask for new content in specified field
+            questionFormat dummyQuestion;
             switch (nInput)
             {
             case 1:
-                editField("topic", questionList[nSelectedIndex].topic);
+
+                //copy into dummy varibales, delete, than paste
+                dummyQuestion = questionList[nSelectedIndex];
+                overwriteRecord(questionList, nNumOfQues, nSelectedIndex);
+                //copy new topic into temp struct var
+                editField("topic", dummyQuestion.topic);
+                
+                
+                //basically delete the record and then repaste it wwith new topic and number
+                
+                questionList[nNumOfQues - 1] = dummyQuestion;
+                questionList[nNumOfQues - 1].questionNum = getLastQuesNum(questionList, nNumOfQues, questionList[nNumOfQues - 1].topic) + 1;
                  printf("\nRecord edited successfully!\n\n");
                 break;
             case 2:
@@ -582,15 +622,12 @@ editRecord(questionFormat *questionList, int nNumOfQues)
                 break;
             case 3:
                 editChoice("choice 1", questionList[nSelectedIndex].choice1, questionList[nSelectedIndex].answer, choice2, choice3 );
-                 printf("\nRecord edited successfully!\n\n");
                 break;
             case 4:
                 editChoice("choice 2", questionList[nSelectedIndex].choice2, questionList[nSelectedIndex].answer, choice1, choice3);
-                 printf("\nRecord edited successfully!\n\n");
                 break;
             case 5:
                 editChoice("choice 3", questionList[nSelectedIndex].choice3, questionList[nSelectedIndex].answer, choice1, choice2);
-                 printf("\nRecord edited successfully!\n\n");
                 break;
             case 6:
                 
@@ -696,27 +733,9 @@ deleteRecord(questionFormat *questionList, int nNumOfQues)
             // If user selects 1 (yes)
             if (nInput)
             {
-
-                /*Move question numbers to the next question
-                Initialize Previous question number to the question number of selected question */
-                nPrevQuesNum = questionList[nSelectedIndex].questionNum;
-
-                // loop through question array starting from the question after the selected questioon
-                for (int i = nSelectedIndex + 1; i < nNumOfQues; i++)
-                {
-                    // if the topic of the selected question is equal to the topic of the current question in loop
-                    if (!strcmp(questionList[nSelectedIndex].topic, questionList[i].topic))
-                    {
-                        /*set the question number of the current question in loop TO the previous question number (in the specified topic)
-                        then increment nPrevQuesNum*/
-                        questionList[i].questionNum = nPrevQuesNum;
-                        nPrevQuesNum++;
-                    }
-                }
-
-                // overwrite the selected question struct by copying next question in the topic TO the current question in the same topic
-                for (int i = nSelectedIndex; i < nNumOfQues; i++)
-                    questionList[i] = questionList[i + 1];
+                //function
+                //overwrite the selected question
+               overwriteRecord(questionList, nNumOfQues, nSelectedIndex);
 
                 // subtract question number by one
                 nNumOfQues--;
