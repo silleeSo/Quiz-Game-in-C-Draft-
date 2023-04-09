@@ -14,13 +14,13 @@ typedef char string150[LEN3];
 
 typedef struct 
 {
-    string20 topic;
-    int questionNum;
     string150 question;
     string30 choice1;
     string30 choice2;
     string30 choice3;
     string30 answer;
+    string20 topic;
+    int questionNum;
 
 } questionFormat;
 //question 150, answer and choices 30, topic 20
@@ -50,9 +50,9 @@ getLastQuesNum(questionFormat *questionList, int nNumOfQues, string20 selectedTo
 int 
 addRecord(questionFormat *questionList, int nNumOfQues);
 int 
-importData(questionFormat *questionList, int nNumOfQues, FILE *filePointer);
+importData(questionFormat *questionList, int nNumOfQues);
 void 
-exportData(questionFormat *questionList, int nNumOfQues, FILE *filePointer);
+exportData(questionFormat *questionList, int nNumOfQues);
 void 
 editRecord(questionFormat *questionList, int nNumOfQues);
 int 
@@ -60,12 +60,12 @@ deleteRecord(questionFormat *questionList, int nNumOfQues);
 
 //3. FUNCTIONS CALLED IN playFunc()
 int 
-playGame(questionFormat *questionList, int nNumOfQues, time_t timeVar, int nLeaderboardSize, leaderBoardFormat *leaderboard);
+playGame(questionFormat *questionList, int nNumOfQues,  int nLeaderboardSize, leaderBoardFormat *leaderboard);
 void 
 viewScores(int nLeaderboardSize, leaderBoardFormat *leaderboard);
 void 
-manageFunc(string30 password, questionFormat *questionList, int *nNumOfQues, FILE *filePointer);
+manageFunc(string30 password, questionFormat *questionList, int *nNumOfQues);
 void
-playFunc ( questionFormat *questionList, int nNumOfQues, time_t timeVar, int *nLeaderboardSize, leaderBoardFormat *leaderBoard);
+playFunc ( questionFormat *questionList, int nNumOfQues,  int *nLeaderboardSize, leaderBoardFormat *leaderBoard);
 void 
 printMainMenu();

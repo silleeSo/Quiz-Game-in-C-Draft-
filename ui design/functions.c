@@ -20,13 +20,17 @@ catCharacter(char *givenString, int *nIndexStr, char cNewChar)
      // concatenate null byte     
     givenString[*nIndexStr] = '\0';    
 }
-
+/* catCharacter accepts string input from the user, filtering out '\n'
+@param *strInput - cthe string to store characters in
+@param nMaxLength - maximum length of the given string
+Pre-condition: string inputted must be within max length, or string will be truncated
+*/
 void 
 getStrInput(char *strInput, int nMaxLength)
 {
     char cInput;
     int nInd = 0;
-    int nNumCh = 0, nLoopCtr = 0;
+    int nLoopCtr = 0;
 
     do
     {    // scanf character
@@ -93,6 +97,8 @@ getIntInput(int nLowerBound, int nUpperBound)
 @param *strChoiceName - the choice name in the form of a string ("choice 1"/ "choice 2"/ "choice 3")
 @param *strChoice - the content of the choice
 @param *strAnswer - the answer to the question
+@param *altChoice1 - other choice besides the selected choice
+@param *altChoice2 - other choice besides the selected choice and altChoice1
 Pre-condition: question answer and choice must be initialized or defined before calling this function
 */
 void 
@@ -266,6 +272,13 @@ getLastQuesNum(questionFormat *questionList, int nNumOfQues, string20 selectedTo
 
     return nLastQuesNum;
 }
+
+/* overwriteRecord overwrites a specific record at a certain index
+@param *questionList - the list of questions
+@param nNumOfQues - the size or number of question in questionList
+@param nSelectedIndex - the index of the record to overwrite
+Pre-condition: all parameters need to be accurate or errors might occur
+*/
 void overwriteRecord(questionFormat *questionList, int nNumOfQues, int nSelectedIndex) 
 {
     int nPrevQuesNum;
@@ -431,12 +444,13 @@ addRecord(questionFormat *questionList, int nNumOfQues)
 Pre-condition: file to import must be populated or nothing will be imported
 */
 int 
-importData(questionFormat *questionList, int nNumOfQues, FILE *filePointer)
+importData(questionFormat *questionList, int nNumOfQues)
 {
 
     // declare variables
     string30 fileName;
     string20 questionTopic;
+    FILE *filePointer;
     int nPosition = 0, strInd = 0, nArrayInd = nNumOfQues, nInput = 1; // CHANGE ARRAY INDEX N SET TO S IF EVER MAM SAYS NA NEED LANG APPEND, NOT REWRITE
     char cCurrentChar;
 
@@ -556,16 +570,23 @@ importData(questionFormat *questionList, int nNumOfQues, FILE *filePointer)
 Pre-condition: questionList must be populated or nothing will be exported
 */
 void 
-exportData(questionFormat *questionList, int nNumOfQues, FILE *filePointer)
+exportData(questionFormat *questionList, int nNumOfQues)
 {
     int nInput;
     // declare variables
     string30 strFileName;
+    FILE *filePointer;
     if (nNumOfQues == 0)
     {
         printf("\n\t\t\t\t\t\tNo existing records to export!\n");
         printf("\n\t\t\t\t\t\tEnter 0 to return... ");
-        nInput = getIntInput(0,0);
+        scanf("%d", &nInput);
+        while (nInput != 0) {
+            
+            system("CLS");
+            printf("\n\t\t\t\t\t\tInvalid input, please enter 0: ");
+            scanf("%d", &nInput);
+        }
     }
     else
     {
@@ -591,7 +612,13 @@ exportData(questionFormat *questionList, int nNumOfQues, FILE *filePointer)
         fclose(filePointer);
         printf("\n\t\t\t\t\t\tData exported successfully!\n");
         printf("\n\t\t\t\t\t\tEnter 0 to return... ");
-        nInput = getIntInput(0,0);
+        scanf("%d", &nInput);
+        while (nInput != 0) {
+            
+            system("CLS");
+            printf("\n\t\t\t\t\t\tInvalid input, please enter 0: ");
+            scanf("%d", &nInput);
+        }
     }
     
 }
@@ -607,8 +634,7 @@ editRecord(questionFormat *questionList, int nNumOfQues)
     // create array of topics
     string20 topics[nNumOfQues];
     string20 selectedTopic;
-    string30 choice1, choice2, choice3;
-    char *correctChoice;                                                              // index of the selected question in the array
+    string30 choice1, choice2, choice3;                                                           // index of the selected question in the array
     int ctrTopics, nInput = 1, nSelectedIndex, nLoopCtr = 0, nMinInput = 1, nHighestQuesNum, nCatch; // counter for topics array
 
     system("CLS");
@@ -731,14 +757,26 @@ editRecord(questionFormat *questionList, int nNumOfQues)
                 system("CLS");
                 printf("\n\n\n\t\t\t\t\t\tRecord edited successfully!\n\n");
                 printf("\t\t\t\t\t\tEnter 0 to return... ");
-                nCatch = getIntInput(0,0);
+                scanf("%d", &nCatch);
+                while (nInput != 0) 
+                {
+                    system("CLS");
+                    printf("\n\t\t\t\t\t\tInvalid input, please enter 0: ");
+                    scanf("%d", &nCatch);
+                }
                 break;
             case 2:
                 editField("question", questionList[nSelectedIndex].question);
                 system("CLS");
                 printf("\n\n\n\t\t\t\t\t\tRecord edited successfully!\n\n");
                 printf("\t\t\t\t\t\tEnter 0 to return... ");
-                nCatch = getIntInput(0,0);
+                scanf("%d", &nCatch);
+                while (nInput != 0) 
+                {
+                    system("CLS");
+                    printf("\n\t\t\t\t\t\tInvalid input, please enter 0: ");
+                    scanf("%d", &nCatch);
+                }
                 break;
             case 3:
                 editChoice("choice 1", questionList[nSelectedIndex].choice1, questionList[nSelectedIndex].answer, choice2, choice3 );
@@ -772,7 +810,13 @@ editRecord(questionFormat *questionList, int nNumOfQues)
                 system("CLS");
                 printf("\n\t\t\t\t\t\tRecord edited successfully!\n");
                 printf("\t\t\t\t\t\tEnter 0 to return... ");
-                nCatch = getIntInput(0,0);
+                scanf("%d", &nCatch);
+                while (nInput != 0) 
+                {
+                    system("CLS");
+                    printf("\n\t\t\t\t\t\tInvalid input, please enter 0: ");
+                    scanf("%d", &nCatch);
+                }
         
                  
                 break;
@@ -813,9 +857,7 @@ deleteRecord(questionFormat *questionList, int nNumOfQues)
         nSelectedIndex = 0;
 
         // create array of topics
-        ctrTopics = createArrayOfTopics(topics, questionList, nNumOfQues);
-
-        
+        ctrTopics = createArrayOfTopics(topics, questionList, nNumOfQues);    
 
         //print top border
         printHoriBorder();
@@ -915,11 +957,12 @@ deleteRecord(questionFormat *questionList, int nNumOfQues)
 Pre-condition: questionList must be populated or the function will only display a message
 */
 int 
-playGame(questionFormat *questionList, int nNumOfQues, time_t timeVar, int nLeaderboardSize, leaderBoardFormat *leaderboard)
+playGame(questionFormat *questionList, int nNumOfQues, int nLeaderboardSize, leaderBoardFormat *leaderboard)
 {
     // declare and define variables
     string20 topics[nNumOfQues];
     string20 selectedTopic;
+    time_t timeVar; 
     int nCtrTopics = 0, nInput, nCorrectAnswer, nLastQuesNum = 0, nRandQuesInd, bIsfound = 0, nQuesIndex = 0; // reset variables
 
     // get seed from time
@@ -985,6 +1028,25 @@ playGame(questionFormat *questionList, int nNumOfQues, time_t timeVar, int nLead
             // reset question list index and flag variable
            nQuesIndex = 0;
            bIsfound = 0;
+           /*
+           **array of indexes, with random index to this array
+           1. create array
+                num of elements = num of question numbers in topic
+                elements = 0 to num of elements-1
+            2. random number generated becomes index to the array of indices
+            3. every time u get a number, move down the elements 
+            4. subtract array size
+            5. if array of indices is finally empty, display alert. (all questions in this topic have been answered, reset array???)
+
+           
+            2. check if all used
+            if not:
+            1. random num for q num paren
+            2. check if used na
+            3. if yes try for another one
+            if all used in that topic: 
+            1. display message
+           */
 
             // based on the index inputted, loop through array to get the corresponding question with the same topic ad the random num generated
             while (!bIsfound)
@@ -1069,13 +1131,30 @@ Pre-condition: leaderboard must be populated or the function will only display m
 void 
 viewScores(int nLeaderboardSize, leaderBoardFormat *leaderboard)
 {
-    int nInput;
+    int nInput, nMaxInd;
+    leaderBoardFormat temp;
 
     if (nLeaderboardSize == 0)
         printf ("\n\n\t\t\t\t\t\tNo existing entries to display!\n\n");
 
-    
     else{
+
+        //sort scores
+        for(int i = 0; i < nLeaderboardSize-1; i++)
+        {
+            nMaxInd = i;
+            for(int j = i+1 ; j < nLeaderboardSize; j++)
+            {
+                if (leaderboard[nMaxInd].score < leaderboard[j].score)
+                nMaxInd = j;
+            }
+            if(nMaxInd != i)
+            {
+                temp = leaderboard[i];
+                leaderboard[i] = leaderboard[nMaxInd];
+                leaderboard[nMaxInd] = temp;
+            }
+        }
         //print header
         printHoriBorder();
         printf("\n\t\t\t\t\t\t\tRow\tPlayer Name\tScore\n");
@@ -1090,7 +1169,13 @@ viewScores(int nLeaderboardSize, leaderBoardFormat *leaderboard)
     }
     //get int input with validation
     printf("\n\t\t\t\t\t\tEnter 0 to go back... ");
-    nInput = getIntInput(0, 0);
+    scanf("%d", &nInput);
+    while (nInput != 0) 
+    {  
+        system("CLS");
+        printf("\n\t\t\t\t\t\tInvalid input, please enter 0: ");
+        scanf("%d", &nInput);
+    }
     system("CLS");
 }
 
@@ -1104,7 +1189,7 @@ viewScores(int nLeaderboardSize, leaderBoardFormat *leaderboard)
 Pre-condition: correct password required before proceeding
 */
 void 
-manageFunc(string30 password, questionFormat *questionList, int *nNumOfQues, FILE *filePointer)
+manageFunc(string30 password, questionFormat *questionList, int *nNumOfQues)
 {
     // declare variables
     string30 strInput;
@@ -1170,10 +1255,10 @@ manageFunc(string30 password, questionFormat *questionList, int *nNumOfQues, FIL
                 *nNumOfQues = deleteRecord(questionList, *nNumOfQues);
                 break;
             case 4:
-                *nNumOfQues = importData(questionList, *nNumOfQues, filePointer);
+                *nNumOfQues = importData(questionList, *nNumOfQues);
                 break;
             case 5:
-                exportData(questionList, *nNumOfQues, filePointer);
+                exportData(questionList, *nNumOfQues);
                 break;
             }
 
@@ -1190,7 +1275,7 @@ manageFunc(string30 password, questionFormat *questionList, int *nNumOfQues, FIL
 Pre-condition: all values passed to parameters must be valid
 */
 void 
-playFunc ( questionFormat *questionList, int nNumOfQues, time_t timeVar, int *nLeaderboardSize, leaderBoardFormat *leaderBoard)
+playFunc ( questionFormat *questionList, int nNumOfQues, int *nLeaderboardSize, leaderBoardFormat *leaderBoard)
 {
 
     //declare varibales
@@ -1227,7 +1312,7 @@ playFunc ( questionFormat *questionList, int nNumOfQues, time_t timeVar, int *nL
        //based on user input, open next menu 
         switch (nInput)
         {
-            case 1: *nLeaderboardSize = playGame(questionList, nNumOfQues, timeVar, *nLeaderboardSize, leaderBoard); 
+            case 1: *nLeaderboardSize = playGame(questionList, nNumOfQues, *nLeaderboardSize, leaderBoard); 
                     break;
             case 2: viewScores(*nLeaderboardSize, leaderBoard); 
                     break;

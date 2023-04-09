@@ -1,13 +1,5 @@
 Geography
 1
-What is country
-PH
-CN
-SG
-PH
-
-Geography
-2
 Which country features a shipwreck on its national flag?
 Vanuatu
 Bermuda
@@ -15,7 +7,7 @@ Croatia
 Bermuda
 
 Geography
-3
+2
 What country has the highest life expectancy?
 Japan
 HongKong
@@ -23,7 +15,7 @@ Philippines
 HongKong
 
 Geography
-4
+3
 The great Victoria Desert is located in
 Canada
 Africa
@@ -31,7 +23,7 @@ Australia
 Australia
 
 Geography
-5
+4
 Which of the following is not a kharif crop?
 Jute
 Mustard
@@ -39,7 +31,7 @@ Maize
 Mustard
 
 Geography
-6
+5
 The luminous coloured ring, surrounding the sun is called the
 corona
 nebula
@@ -157,4 +149,12 @@ Ant
 Butterfly
 Wasp
 Wasp
+
+Geography
+6
+What is country
+PH
+CN
+SG
+PH
 
