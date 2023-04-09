@@ -1,0 +1,8 @@
+Naming Conventions
+1
+What is the proper naming format for c code?
+Hungarian Notation
+Frontal Notation
+Scientific Notation
+Hungarian Notation
+

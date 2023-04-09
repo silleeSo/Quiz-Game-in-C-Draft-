@@ -21,6 +21,28 @@ catCharacter(char *givenString, int *nIndexStr, char cNewChar)
     givenString[*nIndexStr] = '\0';    
 }
 
+void 
+getStrInput(char *strInput, int nMaxLength)
+{
+    char cInput;
+    int nInd = 0;
+    int nNumCh = 0, nLoopCtr = 0;
+
+    do
+    {    // scanf character
+        scanf("%c", &cInput);
+
+        // if the character is not \n store it into string
+        if (cInput!='\n')
+        {
+            strInput[nInd] = cInput;
+            nInd++;
+            strInput[nInd] = '\0';
+        }       
+        nLoopCtr++;
+    } while (strlen(strInput) < nMaxLength && (cInput!='\n' || nLoopCtr < 2));
+}
+
 /* editField asks the user for the new content of a specified field, stores it, and displays a notifying message
 @param *fieldName - the specified field (string/ character pointer)
 @param *field - where to store the new content of the field (string/ character pointer)
@@ -29,10 +51,18 @@ Pre-condition: *fieldName and *field are both valid
 void 
 editField(char *fieldName, char *field)
 {
+    int nMaxLength;
     printf("\n\n\n\t\t\t\t\t\tInput the new content of %s: ", fieldName);
-    gets(field);
-    gets(field);
-    //scanf("%c");
+    if (!strcmp(fieldName, "question"))
+        nMaxLength = 150;
+    else if (!strcmp(fieldName, "topic"))
+        nMaxLength = 20;
+
+    //choices
+    else
+        nMaxLength = 30;
+    
+    getStrInput(field, nMaxLength);
    
 }
 
@@ -80,13 +110,19 @@ editChoice(char *strChoiceName, char *strChoice, char *strAnswer, char *altChoic
         // display warning message
         printf("\n\n\n\t\t\t\t\t\tThis choice contains the correct answer. Editing this choice will automatically edit the answer.\n\t\t\t\t\t\tDo you wish to proceed?");
         printf("\n\n\n\t\t\t\t\t\t1 - Proceed\n\t\t\t\t\t\t0 - Cancel\n");
-        printf("Enter a number: ");
+        printf("\t\t\t\t\t\tEnter a number: ");
         nInput = getIntInput(0, 1);
         system("CLS");
         if (nInput)
         {
             // edit answer n choice
             editField(strChoiceName, strChoice);
+            while (!strcmp(strChoice, altChoice1) || !strcmp(strChoice, altChoice2))
+            {
+                system("CLS");
+                printf("\n\n\n\t\t\t\t\t\tDuplicate choices are not allowed!\n\t\t\t\t\t\tPlease try again: ");
+                getStrInput(strChoice, 30);
+            }   
             strcpy(strAnswer, strChoice);
             system("CLS");
              printf("\n\n\n\t\t\t\t\t\tRecord edited successfully!\n");
@@ -104,15 +140,16 @@ editChoice(char *strChoiceName, char *strChoice, char *strAnswer, char *altChoic
         while (!strcmp(strChoice, strAnswer))
         {
             system("CLS");
-            printf("\n\n\n\t\t\t\t\t\tThis choice can not be the same as the answer of the question!\nPlease try again: ");
-            gets(strChoice);
+            printf("\n\n\n\t\t\t\t\t\tThis choice can not be the same as the answer of the question!\n\t\t\t\t\t\tPlease try again: ");
+            getStrInput(strChoice, 30);
         } 
         while (!strcmp(strChoice, altChoice1) || !strcmp(strChoice, altChoice2)
         ){
             system("CLS");
-            printf("\n\n\n\t\t\t\t\t\tDuplicate choices are not allowed!\nPlease try again: ");
-            gets(strChoice);
+            printf("\n\n\n\t\t\t\t\t\tDuplicate choices are not allowed!\n\t\t\t\t\t\tPlease try again: ");
+            getStrInput(strChoice, 30);
         }
+        system("CLS");
         printf("\n\n\n\t\t\t\t\t\tRecord edited successfully!\n\n");
         printf("\t\t\t\t\t\tEnter 0 to return... ");
         nInput = getIntInput(0,0);
@@ -288,12 +325,11 @@ addRecord(questionFormat *questionList, int nNumOfQues)
         bExists = 0;
         // Ask for question to add
         printf("\n\n\n\t\t\t\t\t\tEnter a question: ");
-        gets(question); // excess for newline
-        gets(question);
+        getStrInput(question, 150);
 
         // ask for answer to the added question
         printf("\t\t\t\t\t\tEnter the answer to the question: ");
-        gets(answer);
+        getStrInput(answer, 30);
 
         // loop thru all elements and check if question and answered from user input already exists in array of questions
         for (int i = 0; i < nNumOfQues; i++)
@@ -321,7 +357,7 @@ addRecord(questionFormat *questionList, int nNumOfQues)
             strcpy(questionList[nNumOfQues].answer, answer);
             // get the remaining information needed (topic)
             printf("\t\t\t\t\t\tEnter the topic of the question: ");
-            gets(questionList[nNumOfQues].topic);
+            getStrInput(questionList[nNumOfQues].topic, 20);
             
             // loop while answer is not in the choices or there are duplicates
             while (bAnsIsInChoices == 0 || bIsDuplicate == 1 )
@@ -331,11 +367,11 @@ addRecord(questionFormat *questionList, int nNumOfQues)
                 bIsDuplicate = 1;
                 // ask for input on the choices
                 printf("\t\t\t\t\t\tEnter choice 1: ");
-                gets(questionList[nNumOfQues].choice1);
+                getStrInput(questionList[nNumOfQues].choice1, 30);
                 printf("\t\t\t\t\t\tEnter choice 2: ");
-                gets(questionList[nNumOfQues].choice2);
+                getStrInput(questionList[nNumOfQues].choice2, 30);
                 printf("\t\t\t\t\t\tEnter choice 3: ");
-                gets(questionList[nNumOfQues].choice3);
+                getStrInput(questionList[nNumOfQues].choice3, 30);
 
                 // compare answer with each choice, and if one of them is equal, set flag variable to 1 (it is present)
                 if (!strcmp(questionList[nNumOfQues].choice1, questionList[nNumOfQues].answer) ||
@@ -405,22 +441,26 @@ importData(questionFormat *questionList, int nNumOfQues, FILE *filePointer)
     char cCurrentChar;
 
     // ask for filename and validate
-    printf("Import file name (txt) to import: ");
-    scanf("%s", fileName);
+    printf("\n\n\n\t\t\t\t\t\tImport file name (txt) to import: ");
+    getStrInput(fileName, 30);
 
     // loop while the user inputs and invalid filename and does not choose to return to manage menu
     while (fopen(fileName, "r") == NULL && nInput == 1)
     {
-        printf("Filename does not exist!\n");
-        printf("0 - Go back to manage menu\n1 - Try again\n");
+        system("CLS");
 
-        // get int input and validate
+        printf("\n\t\t\t\t\t\tFilename does not exist!\n");
+        printf("\t\t\t\t\t\t0 - Go back to manage menu\n\t\t\t\t\t\t1 - Try again\n");
+
+         // get int input and validate
+        printf("\t\t\t\t\t\tEnter a number: ");
         nInput = getIntInput(0, 1);
 
         if (nInput)
         {
-            printf("Import file name (txt) to import: ");
-            scanf("%s", fileName);
+            system("CLS");
+            printf("\n\n\n\t\t\t\t\t\tImport file name (txt) to import: ");
+            getStrInput(fileName, 30);
         }
     }
 
@@ -499,7 +539,9 @@ importData(questionFormat *questionList, int nNumOfQues, FILE *filePointer)
         fclose(filePointer);
 
         // print notifying message
-        printf("\nData imported successfully!\n");
+        printf("\n\t\t\t\t\t\tData imported successfully!\n");
+        printf("\n\t\t\t\t\t\tEnter 0 to return... ");
+        nInput = getIntInput(0,0);
     }
 
     // return new array size
@@ -516,17 +558,20 @@ Pre-condition: questionList must be populated or nothing will be exported
 void 
 exportData(questionFormat *questionList, int nNumOfQues, FILE *filePointer)
 {
+    int nInput;
     // declare variables
     string30 strFileName;
     if (nNumOfQues == 0)
     {
-        printf("\nNo records to export!\n");
+        printf("\n\t\t\t\t\t\tNo existing records to export!\n");
+        printf("\n\t\t\t\t\t\tEnter 0 to return... ");
+        nInput = getIntInput(0,0);
     }
     else
     {
         // ask user for filename with extension
-        printf("Import file name (txt) to export to: ");
-        scanf("%s", strFileName);
+        printf("\n\n\n\t\t\t\t\t\tImport file name (txt) to export to: ");
+        getStrInput(strFileName, 30);
 
         // open the file
         filePointer = fopen(strFileName, "w");
@@ -544,7 +589,9 @@ exportData(questionFormat *questionList, int nNumOfQues, FILE *filePointer)
         }
         // close the file
         fclose(filePointer);
-        printf("\nData exported successfully!\n");
+        printf("\n\t\t\t\t\t\tData exported successfully!\n");
+        printf("\n\t\t\t\t\t\tEnter 0 to return... ");
+        nInput = getIntInput(0,0);
     }
     
 }
@@ -703,32 +750,30 @@ editRecord(questionFormat *questionList, int nNumOfQues)
                 editChoice("choice 3", questionList[nSelectedIndex].choice3, questionList[nSelectedIndex].answer, choice1, choice2);
                 break;
             case 6:
-                
-                printf("\n\t\t\t\t\t\tEditing the answer to this question will automatically edit the choice that contains it.\n\t\t\t\t\t\tDo you wish to proceed?");
-                printf("\n\t\t\t\t\t\t1 - Proceed\n\t\t\t\t\t\t0 - Cancel\n");
-                printf("Enter a number: ");
-                nInput = getIntInput(0, 1);
-                system("CLS");
-           
-            if (nInput)
-            {
-                
-                //find correct choice
-                if (!strcmp(questionList[nSelectedIndex].answer, questionList[nSelectedIndex].choice1))
-                    correctChoice = questionList[nSelectedIndex].choice1;
-                else if (!strcmp(questionList[nSelectedIndex].answer, questionList[nSelectedIndex].choice2))
-                    correctChoice = questionList[nSelectedIndex].choice2;
-                else if (!strcmp(questionList[nSelectedIndex].answer, questionList[nSelectedIndex].choice3))
-                    correctChoice = questionList[nSelectedIndex].choice3;
 
-                // edit answer n choice
-                editField("answer", questionList[nSelectedIndex].answer);
-                strcpy(correctChoice, questionList[nSelectedIndex].answer);
+                //display choices
+                printf("\n\n\t\t\t\t\t\tChoice 1 - %s", questionList[nSelectedIndex].choice1);
+                printf("\n\t\t\t\t\t\tChoice 2 - %s", questionList[nSelectedIndex].choice2);
+                printf("\n\t\t\t\t\t\tChoice 3 - %s", questionList[nSelectedIndex].choice3);
+
+                //choose from choice
+                printf("\n\n\t\t\t\t\t\tEnter a choice number (1-3): ");
+                nInput = getIntInput(1, 3);
+
+                //find new correct choice and edit answer
+                if (nInput == 1)
+                    strcpy(questionList[nSelectedIndex].answer, questionList[nSelectedIndex].choice1);
+                else if (nInput == 2)
+                    strcpy(questionList[nSelectedIndex].answer, questionList[nSelectedIndex].choice2);
+                else if (nInput == 3)
+                    strcpy(questionList[nSelectedIndex].answer, questionList[nSelectedIndex].choice3);
+
+                // print message
                 system("CLS");
                 printf("\n\t\t\t\t\t\tRecord edited successfully!\n");
                 printf("\t\t\t\t\t\tEnter 0 to return... ");
                 nCatch = getIntInput(0,0);
-        }
+        
                  
                 break;
             }
@@ -756,45 +801,62 @@ deleteRecord(questionFormat *questionList, int nNumOfQues)
 
     if (nNumOfQues == 0)
     {
-        printf("\nNo existing delete to edit!\n");
-        nInput = 0;
+        printf("\n\t\t\t\t\t\tNo existing delete to edit!\n");
+        printf("\n\t\t\t\t\t\tEnter 0 to return... ");
+        nInput = getIntInput(0,0);
     }
     while (nInput != 0)
-    {
+    {   
+        system("CLS");
+
         // reset index of selected question
         nSelectedIndex = 0;
 
         // create array of topics
         ctrTopics = createArrayOfTopics(topics, questionList, nNumOfQues);
 
-        printf("0 - Go back to main menu\n");
-        printf("Select a Topic: \n");
+        
 
+        //print top border
+        printHoriBorder();
+        printTableLine("- SELECT A TOPIC - ");
+        
         // display topics
         for (int i = 0; i < ctrTopics; i++)
-            printf("%d - %s\n", i + 1, topics[i]);
+        {
+            printf("\n\t\t\t\t\t\t\t\t%d - %s\t\t\t\n", i + 1, topics[i]);
+
+            //print border
+            printHoriBorder();
+        }
+        printf("\n\t\t\t\t\t\t\t\t0 -  Go back to main menu\n");
+        printHoriBorder();
 
         // get user input with validation
+        printf("\n\t\t\t\t\t\tEnter a number: ");
         nInput = getIntInput(0, ctrTopics);
 
-        if (nInput != 0)
+        if (nInput != 0 && nNumOfQues != 0)
         {
             /*Define selectedTopic by copying the topic from the topics array
               minus 1 since index starts at 0, input starts at 1 lowest*/
             strcpy(selectedTopic, topics[nInput - 1]);
 
+           
+            system("CLS");
+
             // display questions from the selected topic and get highest question number
-            printf("Enter a question number: \n");
+            printf("\n\n\n\t\t\t\t\t\tEnter a question number: \n");
             for (int i = 0; i < nNumOfQues; i++)
             {
                 // check if the selected topic is the same as the topic of the current question in loop
                 if (!strcmp(questionList[i].topic, selectedTopic))
                 {
-                    printf("Question %d - %s\n", questionList[i].questionNum, questionList[i].question);
+                    printf("\t\t\t\t\t\tQuestion %d - %s\n", questionList[i].questionNum, questionList[i].question);
                     nHighestQuesNum = questionList[i].questionNum;
                 }
             }
-
+            printf("\n\n\n\t\t\t\t\t\tEnter a question number: ");
             nInput = getIntInput(1, nHighestQuesNum);
 
             /* GET THE INDEX (IN QUESTIONLIST ARRAY) OF THE SELECTED QUESTION
@@ -803,12 +865,12 @@ deleteRecord(questionFormat *questionList, int nNumOfQues)
             increment nSelectedIndex*/
             while (questionList[nSelectedIndex].questionNum != nInput || strcmp(questionList[nSelectedIndex].topic, selectedTopic) != 0) // take question index in 1d array
                 nSelectedIndex++;
-
-            // UP TO HERE SAME W EDIT !!!
+            system("CLS");
             // at this point, nInput is still = ques num
-            printf("Are you sure you want to delete question number %d of %s?\n0 - No\n1 - Yes\n", nInput, selectedTopic);
+            printf("\n\t\t\t\t\t\tAre you sure you want to delete question number %d of %s?\n\t\t\t\t\t\t0 - No\n\t\t\t\t\t\t1 - Yes", nInput, selectedTopic);
+            printf("\n\n\n\t\t\t\t\t\tEnter a number: ");
             nInput = getIntInput(0, 1);
-
+            system("CLS");
             // If user selects 1 (yes)
             if (nInput)
             {
@@ -819,12 +881,22 @@ deleteRecord(questionFormat *questionList, int nNumOfQues)
                 // subtract question number by one
                 nNumOfQues--;
 
-                printf("\n Record deleted successfully!\n");
+                printf("\n\n\n\t\t\t\t\t\tRecord deleted successfully!\n");
             }
-            printf("\n0 - Go back to manage data menu\n1 - Delete another record\n");
-
+            printf("\n\t\t\t\t\t\t0 - Go back to manage data menu\n\t\t\t\t\t\t1 - Delete another record");
             // get input with validation
+            printf("\n\n\n\t\t\t\t\t\tEnter a number: ");
             nInput = getIntInput(0, 1);
+
+            
+            system("CLS");
+            if (nNumOfQues == 0 && nInput == 1)
+            {
+                printf("\n\n\n\t\t\t\t\t\tNo more existing records to delete!");
+                printf("\n\t\t\t\t\t\tEnter 0 to return... ");
+                nInput = getIntInput(0,0);
+            }
+                
         }
     }
     return nNumOfQues;
@@ -854,8 +926,10 @@ playGame(questionFormat *questionList, int nNumOfQues, time_t timeVar, int nLead
     srand(time(&timeVar));
      if (nNumOfQues == 0)
     {
-        printf("\nNo existing records to use in game!\n");
-        nInput = 0;
+        printf("\n\t\t\t\t\t\tNo existing records to use in game!\n");
+        printf("\n\t\t\t\t\t\tEnter 0 to return... ");
+        nInput = getIntInput(0, 0);
+        system("CLS");
     }
     if (nInput != 0)
     {
@@ -866,22 +940,33 @@ playGame(questionFormat *questionList, int nNumOfQues, time_t timeVar, int nLead
         nCtrTopics = createArrayOfTopics(topics, questionList, nNumOfQues);
 
         // ask for name
-        printf("Please enter your name: ");
+        printf("\n\t\t\t\t\t\tPlease enter your name: ");
         scanf("%s", leaderboard[nLeaderboardSize].name); // get name and store it to the current leaderboard row
-
+        
         do
         {
-            printf("\nSelect a topic\n");
-
-            // display the topics
+            system("CLS");
+             //print top border
+            printHoriBorder();
+            printTableLine("- SELECT A TOPIC - ");
+        
+            // display topics
             for (int i = 0; i < nCtrTopics; i++)
-                printf("%d - %s\n", i + 1, topics[i]);
+            {
+                printf("\n\t\t\t\t\t\t\t\t%d - %s\t\t\t\n", i + 1, topics[i]);
+
+                //print border
+                printHoriBorder();
+            }
 
             // print score
-            printf("Score: %d\n", leaderboard[nLeaderboardSize].score);
+            printf("\n\t\t\t\t\t\t\t\tScore: %d\n", leaderboard[nLeaderboardSize].score);
+            printHoriBorder();
 
             // get input (for which topic) with validation
+            printf("\n\t\t\t\t\t\tEnter a number: ");
             nInput = getIntInput(1, nCtrTopics);
+            system("CLS");
 
             /*by this time, hindi na 0 yung input
             Note: minus 1 since index starts at 0, input starts at 1 lowest*/
@@ -917,12 +1002,23 @@ playGame(questionFormat *questionList, int nNumOfQues, time_t timeVar, int nLead
             }
 
             // display question
-            printf("\nYour question is...Random number = %d, Topic = %s, nRandQuesInd = %d\n\n%s\n", nRandomNum, selectedTopic, nRandQuesInd, questionList[nRandQuesInd].question);
+            printHoriBorder();
+            printTableLine("Your question is...");
+            printf("\n\t\t\t\t\t\t%s\n", questionList[nRandQuesInd].question);
+            printHoriBorder();
 
-            // print answer, accept input
-            printf("1 - %s\n2 - %s\n3 - %s\nAnswer (1-3): ", questionList[nRandQuesInd].choice1, questionList[nRandQuesInd].choice2, questionList[nRandQuesInd].choice3);
-            printf("\nScore: %d\n", leaderboard[nLeaderboardSize].score);
+            // print choices, accept input
+            printf("\n\t\t\t\t\t\t\t\t1 - %s\n", questionList[nRandQuesInd].choice1);
+            printHoriBorder();
+            printf("\n\t\t\t\t\t\t\t\t2 - %s\n", questionList[nRandQuesInd].choice2);
+            printHoriBorder();
+            printf("\n\t\t\t\t\t\t\t\t3 - %s\n", questionList[nRandQuesInd].choice3);
+            printHoriBorder();
+            printf("\n\t\t\t\t\t\t\t\tScore: %d\n", leaderboard[nLeaderboardSize].score);
+            printHoriBorder();
+            printf("\n\t\t\t\t\t\tEnter a number (1-3): ");
             nInput = getIntInput(1, 3);
+            system("CLS");
 
             // check which choice is supposed to be the right answer
             if (!strcmp(questionList[nRandQuesInd].choice1, questionList[nRandQuesInd].answer))
@@ -936,22 +1032,28 @@ playGame(questionFormat *questionList, int nNumOfQues, time_t timeVar, int nLead
             if (nInput == nCorrectAnswer)
             {
                 // 1. print
-                printf("\nCorrect! (+5 pnts)");
+                printf("\n\t\t\t\t\t\tCorrect! (+5 pnts)");
                 // 2. add score
                 leaderboard[nLeaderboardSize].score += 5;
             }
             else
-                printf("\nSorry! Wrong answer.");
+                printf("\n\t\t\t\t\t\tSorry! Wrong answer.");
 
             // print updated score, give user option to continue or end game
-            printf("\n\nScore: %d\n\n0 - End game\n1 - Next question\n", leaderboard[nLeaderboardSize].score);
+            printf("\n\n\t\t\t\t\t\tScore: %d\n\n\t\t\t\t\t\t0 - End game\n\t\t\t\t\t\t1 - Next question\n", leaderboard[nLeaderboardSize].score);
+            printf("\t\t\t\t\t\tEnter a number: ");
             nInput = getIntInput(0, 1);
 
             // loop until user does not choose to end game
         } while (nInput != 0);
 
         // after game ends
-        printf("\nCONGRATULATIONS, YOUR FINAL SCORE IS: %d\n\n", leaderboard[nLeaderboardSize].score);
+        system("CLS");
+        printf("\n\t\t\t\t\t\tCONGRATULATIONS, YOUR FINAL SCORE IS: %d\n\n", leaderboard[nLeaderboardSize].score);
+        printf("\n\t\t\t\t\t\tEnter 0 to return... ");
+        nInput = getIntInput(0,0);
+        system("CLS");
+
         // return incremented leaderboard size
         nLeaderboardSize++;
     }
@@ -970,23 +1072,26 @@ viewScores(int nLeaderboardSize, leaderBoardFormat *leaderboard)
     int nInput;
 
     if (nLeaderboardSize == 0)
-        printf ("\n\nNo existing entries to display!\n\n");
+        printf ("\n\n\t\t\t\t\t\tNo existing entries to display!\n\n");
+
     
     else{
         //print header
-        printf("Row\tPlayer Name\tScore\n");
+        printHoriBorder();
+        printf("\n\t\t\t\t\t\t\tRow\tPlayer Name\tScore\n");
+        printHoriBorder();
 
         //print name and scores
         for(int i = 0; i < nLeaderboardSize; i++)
-            printf("%d%+17s\t%d\n", i+1, leaderboard[i].name, leaderboard[i].score );
-    
-        //get int input with validation
-        printf("\nEnter 0 to go back: ");
-        nInput = getIntInput(0, 0);
-        
-        
+        {
+            printf("\n\t\t\t\t\t\t\t%d%17s\t%d\n", i+1, leaderboard[i].name, leaderboard[i].score );
+            printHoriBorder();
+        }   
     }
-    
+    //get int input with validation
+    printf("\n\t\t\t\t\t\tEnter 0 to go back... ");
+    nInput = getIntInput(0, 0);
+    system("CLS");
 }
 
 //4. FUNCTIONS CALLED IN MAIN
@@ -1005,12 +1110,10 @@ manageFunc(string30 password, questionFormat *questionList, int *nNumOfQues, FIL
     string30 strInput;
     int nInput = 1;
 
-    // for new line
     system("CLS");
-    scanf("%c", strInput);
-    printf("\n\n\n\t\t\t\t\t\tEnter the password: ");
-
+    
     // ask for password input with asterisk masking
+    printf("\n\n\n\t\t\t\t\t\tEnter the password: ");
     getPasswordInput(strInput);
 
     // password validation
@@ -1093,7 +1196,8 @@ playFunc ( questionFormat *questionList, int nNumOfQues, time_t timeVar, int *nL
     //declare varibales
     FILE *fp;
     int nInput;
-
+    
+    system("CLS");
     do
     {   
         //open scores file
@@ -1106,11 +1210,19 @@ playFunc ( questionFormat *questionList, int nNumOfQues, time_t timeVar, int *nL
         }
         fclose(fp);
 
+        //print header
+        printHoriBorder();
+        printTableLine("- PLAY MENU -    ");
+
         //print play menu items
-        printf("1 - Play Game\n2 - View Scores\n3 - Exit\n");
+        printTableLine("1 - Play Game    ");
+        printTableLine("2 - View Scores  ");
+        printTableLine("3 - Exit         ");
 
         //get input with validation
+        printf("\n\t\t\t\t\t\tEnter a number: ");
         nInput = getIntInput(1, 3);
+        system("CLS");
 
        //based on user input, open next menu 
         switch (nInput)
@@ -1128,27 +1240,6 @@ playFunc ( questionFormat *questionList, int nNumOfQues, time_t timeVar, int *nL
 }
 
 /* printMainMenu prints the main menu*/
-void 
-printMainMenu1()
-{
-    char cTRCorner = 191, cTLCorner = 218, cBRCorner = 217, cBLCorner = 192, cHorizontalBorder = 196, cVerticalBorder = 179;
-    printf("%c", cTLCorner);
-    for (int i =0; i <31; i++)
-    {
-         printf("%c", cHorizontalBorder);
-    }
-    printf("%c\n", cTRCorner);
-    printf ("%c\t1: Manage Data\t\t%c\n", cVerticalBorder, cVerticalBorder);
-    printf ("%c\t2: Play Game\t\t%c\n", cVerticalBorder, cVerticalBorder);
-    printf ("%c\t3: Exit\t\t\t%c\n", cVerticalBorder, cVerticalBorder);
-    printf("%c", cBLCorner);
-    for (int i =0; i <31; i++)
-    {
-         printf("%c", cHorizontalBorder);
-    }
-    printf("%c\n", cBRCorner);
-    
-}
 
 void printMainMenu(){
     printf("\t\t\t\t\t\t");

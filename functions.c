@@ -776,6 +776,7 @@ playGame(questionFormat *questionList, int nNumOfQues, time_t timeVar, int nLead
      if (nNumOfQues == 0)
     {
         printf("\nNo existing records to use in game!\n");
+        system("CLS");
         nInput = 0;
     }
     if (nInput != 0)
@@ -873,6 +874,8 @@ playGame(questionFormat *questionList, int nNumOfQues, time_t timeVar, int nLead
 
         // after game ends
         printf("\nCONGRATULATIONS, YOUR FINAL SCORE IS: %d\n\n", leaderboard[nLeaderboardSize].score);
+        system("CLS");
+
         // return incremented leaderboard size
         nLeaderboardSize++;
     }
@@ -907,6 +910,8 @@ viewScores(int nLeaderboardSize, leaderBoardFormat *leaderboard)
 
         //get int input with validation
         nInput = getIntInput(0, 0);
+
+        system("CLS");
     }
     
 }
