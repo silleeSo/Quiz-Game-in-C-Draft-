@@ -21,6 +21,7 @@ typedef struct
     string30 answer;
     string20 topic;
     int questionNum;
+    int isUsed;
 
 } questionFormat;
 //question 150, answer and choices 30, topic 20
@@ -59,13 +60,13 @@ int
 deleteRecord(questionFormat *questionList, int nNumOfQues);
 
 //3. FUNCTIONS CALLED IN playFunc()
-int 
-playGame(questionFormat *questionList, int nNumOfQues,  int nLeaderboardSize, leaderBoardFormat *leaderboard);
+void
+playGame(questionFormat *questionList, int nNumOfQues, leaderBoardFormat *roundsLB, leaderBoardFormat *accumulatedLB, int *nRoundsLBSize, int *nAccLBSize);
 void 
-viewScores(int nLeaderboardSize, leaderBoardFormat *leaderboard);
+viewScores( leaderBoardFormat *roundsLB, leaderBoardFormat *accumulatedLB, int nRoundsLBSize, int nAccLBSize);
 void 
 manageFunc(string30 password, questionFormat *questionList, int *nNumOfQues);
 void
-playFunc ( questionFormat *questionList, int nNumOfQues,  int *nLeaderboardSize, leaderBoardFormat *leaderBoard);
+playFunc (questionFormat *questionList, int nNumOfQues,  leaderBoardFormat *roundsLB, leaderBoardFormat *accumulatedLB, int *roundsLBSize, int *accLBSize);
 void 
 printMainMenu();

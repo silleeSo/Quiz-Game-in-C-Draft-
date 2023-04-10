@@ -12,10 +12,12 @@ int main()
 {
     // initialize variables and arrays
     
-    questionFormat questionList[100];
-    leaderBoardFormat leaderboard[100];
+    questionFormat questionList[SIZE];
+    leaderBoardFormat roundsLB[SIZE]; 
+    leaderBoardFormat accumulatedLB[SIZE];
     string30 password = "Prog Pasado";
-    int nQuesListSize=0, nMenuChoice = 0, nLeaderboardSize = 0;
+    int nQuesListSize=0, nMenuChoice = 0, nRoundsLBSize = 0, nAccLBSize;
+
     
 
     do
@@ -30,7 +32,7 @@ int main()
         switch (nMenuChoice)
         {
             case 1: manageFunc(password, questionList, &nQuesListSize); break;
-            case 2: playFunc(questionList, nQuesListSize, &nLeaderboardSize, leaderboard); break;
+            case 2: playFunc(questionList, nQuesListSize, roundsLB, accumulatedLB, &nRoundsLBSize, &nAccLBSize); break;
             case 3: break;
         }
     } 

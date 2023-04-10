@@ -86,8 +86,8 @@ getIntInput(int nLowerBound, int nUpperBound)
     {
         // Clear the stdin so that program won't keep reading the wrong input ^-^
         while ((character = getchar()) != '\n' && character != EOF);
-        system("CLS");
-        printf("\n\n\n\t\t\t\t\t\tInvalid input, try again: ");
+       
+        printf("\n\t\t\t\t\t\tInvalid input, try again: ");
         scanf("%d", &nInput);
     }
     return nInput;
@@ -303,8 +303,21 @@ void overwriteRecord(questionFormat *questionList, int nNumOfQues, int nSelected
     for (int i = nSelectedIndex; i < nNumOfQues; i++)
         questionList[i] = questionList[i + 1];
 }
-
-void printHoriBorder(){
+void printEditMessage (){
+    int nInput;
+    system("CLS");
+    printf("\n\n\n\t\t\t\t\t\tRecord edited successfully!\n\n");
+    printf("\t\t\t\t\t\tEnter 0 to return... ");
+    scanf("%d", &nInput);
+    while (nInput != 0) 
+    {
+        system("CLS");
+        printf("\n\t\t\t\t\t\tInvalid input, please enter 0: ");
+        scanf("%d", &nInput);
+    }
+}
+void printHoriBorder()
+{
     printf("\t\t\t\t\t\t");
     for(int i = 1; i < 50; i++)
         printf("-");
@@ -312,7 +325,6 @@ void printHoriBorder(){
 //re req = 17 characters
 void printTableLine(char *strToPrint){
     printf ("\n\t\t\t\t\t\t|\t\t%s\t\t|\n", strToPrint);
-
     printHoriBorder();
 }
 //2. FUNCTIONS CALLED IN manageFunc()
@@ -420,6 +432,9 @@ addRecord(questionFormat *questionList, int nNumOfQues)
             // after getting the last question number,add one to it and set it as the question number of the newly added question
             questionList[nNumOfQues].questionNum = nLastQuesNum + 1;
 
+            //update status of isUsed
+             questionList[nNumOfQues].isUsed = 0;
+
             // increment the size of array (of questions/records)
             nNumOfQues++;
 
@@ -432,6 +447,7 @@ addRecord(questionFormat *questionList, int nNumOfQues)
 
     } while (nInput == 1); // loop this until user chooses to go back to manage menu after failure to add or until a record has been addded
 
+    //update status of isused
 
     return nNumOfQues; // return new array size
 }
@@ -558,6 +574,10 @@ importData(questionFormat *questionList, int nNumOfQues)
         nInput = getIntInput(0,0);
     }
 
+    //initialize all isUsed to 0
+    for(int i = 0; i < nArrayInd; i++)
+        questionList[i].isUsed = 0;
+    
     // return new array size
     // Note: nArrayInd is always incremented one more than the actual last index, which makes it equal to the question list size
     return nArrayInd;
@@ -572,9 +592,10 @@ Pre-condition: questionList must be populated or nothing will be exported
 void 
 exportData(questionFormat *questionList, int nNumOfQues)
 {
-    int nInput;
+    int nInput, i, j, nNumOfTopics;
     // declare variables
     string30 strFileName;
+    string20 arrayOfTopics[nNumOfQues];
     FILE *filePointer;
     if (nNumOfQues == 0)
     {
@@ -590,6 +611,7 @@ exportData(questionFormat *questionList, int nNumOfQues)
     }
     else
     {
+        
         // ask user for filename with extension
         printf("\n\n\n\t\t\t\t\t\tImport file name (txt) to export to: ");
         getStrInput(strFileName, 30);
@@ -597,17 +619,24 @@ exportData(questionFormat *questionList, int nNumOfQues)
         // open the file
         filePointer = fopen(strFileName, "w");
 
-        for (int i = 0; i < nNumOfQues; i++)
-        {
-            // print out each question (struct) member in this order:
-            fprintf(filePointer, "%s\n", questionList[i].topic);
-            fprintf(filePointer, "%d\n", questionList[i].questionNum);
-            fprintf(filePointer, "%s\n", questionList[i].question);
-            fprintf(filePointer, "%s\n", questionList[i].choice1);
-            fprintf(filePointer, "%s\n", questionList[i].choice2);
-            fprintf(filePointer, "%s\n", questionList[i].choice3);
-            fprintf(filePointer, "%s\n\n", questionList[i].answer);
+        //first create an array of topics
+        nNumOfTopics = createArrayOfTopics(arrayOfTopics, questionList, nNumOfQues);
+        for (i = 0; i < nNumOfTopics; i++){
+            for (j = 0; j < nNumOfQues; j++){
+                if (!strcmp(questionList[j].topic, arrayOfTopics[i]))
+                {
+                    // print out each question (struct) member in this order:
+                    fprintf(filePointer, "%s\n", questionList[j].topic);
+                    fprintf(filePointer, "%d\n", questionList[j].questionNum);
+                    fprintf(filePointer, "%s\n", questionList[j].question);
+                    fprintf(filePointer, "%s\n", questionList[j].choice1);
+                    fprintf(filePointer, "%s\n", questionList[j].choice2);
+                    fprintf(filePointer, "%s\n", questionList[j].choice3);
+                    fprintf(filePointer, "%s\n\n", questionList[j].answer);
+                }
+            }
         }
+
         // close the file
         fclose(filePointer);
         printf("\n\t\t\t\t\t\tData exported successfully!\n");
@@ -635,7 +664,7 @@ editRecord(questionFormat *questionList, int nNumOfQues)
     string20 topics[nNumOfQues];
     string20 selectedTopic;
     string30 choice1, choice2, choice3;                                                           // index of the selected question in the array
-    int ctrTopics, nInput = 1, nSelectedIndex, nLoopCtr = 0, nMinInput = 1, nHighestQuesNum, nCatch; // counter for topics array
+    int ctrTopics, nInput = 1, nSelectedIndex, nLoopCtr = 0, nMinInput = 1, nHighestQuesNum, bQuesExists = 1; // counter for topics array
 
     system("CLS");
     // if there are no existing records yet for the user to edit, display notifying message and set nInput to zero - meaning go back to menu
@@ -713,11 +742,18 @@ editRecord(questionFormat *questionList, int nNumOfQues)
             while (questionList[nSelectedIndex].questionNum != nInput || strcmp(questionList[nSelectedIndex].topic, selectedTopic) != 0)
                 nSelectedIndex++;
 
+            system("CLS");
+            //print the question data
+            printf("\t\t\t\t\t\tTopic: %s\n", questionList[nSelectedIndex].topic);
+            printf("\t\t\t\t\t\tQuestion: %s\n", questionList[nSelectedIndex].question);
+            printf("\t\t\t\t\t\tChoice 1: %s\n", questionList[nSelectedIndex].choice1);
+            printf("\t\t\t\t\t\tChoice 2: %s\n", questionList[nSelectedIndex].choice2);
+            printf("\t\t\t\t\t\tChoice 3: %s\n", questionList[nSelectedIndex].choice3);
+            printf("\t\t\t\t\t\tAnswer: %s\n\n", questionList[nSelectedIndex].answer);
             //print border
-            printHoriBorder();
+           
 
             // ask user for the field to edit
-            system("CLS");
             printHoriBorder();
             printf("\n\t\t\t\t\t\t|\tWhich field would you like to edit?\t|\n");
             printHoriBorder();
@@ -743,40 +779,39 @@ editRecord(questionFormat *questionList, int nNumOfQues)
             switch (nInput)
             {
             case 1:
-
+                
                 //copy into dummy varibales, delete, than paste
                 dummyQuestion = questionList[nSelectedIndex];
                 overwriteRecord(questionList, nNumOfQues, nSelectedIndex);
                 //copy new topic into temp struct var
                 editField("topic", dummyQuestion.topic);
-                
-                
+                         
                 //basically delete the record and then repaste it wwith new topic and number
                 dummyQuestion.questionNum = getLastQuesNum(questionList, nNumOfQues, dummyQuestion.topic) + 1;
                 questionList[nNumOfQues - 1] = dummyQuestion;
-                system("CLS");
-                printf("\n\n\n\t\t\t\t\t\tRecord edited successfully!\n\n");
-                printf("\t\t\t\t\t\tEnter 0 to return... ");
-                scanf("%d", &nCatch);
-                while (nInput != 0) 
-                {
-                    system("CLS");
-                    printf("\n\t\t\t\t\t\tInvalid input, please enter 0: ");
-                    scanf("%d", &nCatch);
-                }
+                printEditMessage();
+                
                 break;
             case 2:
-                editField("question", questionList[nSelectedIndex].question);
-                system("CLS");
-                printf("\n\n\n\t\t\t\t\t\tRecord edited successfully!\n\n");
-                printf("\t\t\t\t\t\tEnter 0 to return... ");
-                scanf("%d", &nCatch);
-                while (nInput != 0) 
+
+                do
                 {
-                    system("CLS");
-                    printf("\n\t\t\t\t\t\tInvalid input, please enter 0: ");
-                    scanf("%d", &nCatch);
-                }
+                    editField("question", questionList[nSelectedIndex].question);
+                    
+                    //check if the question already exists
+                    bQuesExists = 0;
+                    for (int i = 0; i < nNumOfQues; i++)
+                        if (!strcmp(questionList[i].question, questionList[nSelectedIndex].question) && i != nSelectedIndex)
+                            bQuesExists = 1;
+                    
+                    if (bQuesExists){
+                        system("CLS");
+                        printf("\n\n\t\t\t\t\t\tQuestion already exists! Please try again... ");
+                    }
+                    
+                       
+                } while(bQuesExists);
+                printEditMessage();
                 break;
             case 3:
                 editChoice("choice 1", questionList[nSelectedIndex].choice1, questionList[nSelectedIndex].answer, choice2, choice3 );
@@ -807,17 +842,7 @@ editRecord(questionFormat *questionList, int nNumOfQues)
                     strcpy(questionList[nSelectedIndex].answer, questionList[nSelectedIndex].choice3);
 
                 // print message
-                system("CLS");
-                printf("\n\t\t\t\t\t\tRecord edited successfully!\n");
-                printf("\t\t\t\t\t\tEnter 0 to return... ");
-                scanf("%d", &nCatch);
-                while (nInput != 0) 
-                {
-                    system("CLS");
-                    printf("\n\t\t\t\t\t\tInvalid input, please enter 0: ");
-                    scanf("%d", &nCatch);
-                }
-        
+                printEditMessage();
                  
                 break;
             }
@@ -956,18 +981,22 @@ deleteRecord(questionFormat *questionList, int nNumOfQues)
 @returns the new number of questions in questionList
 Pre-condition: questionList must be populated or the function will only display a message
 */
-int 
-playGame(questionFormat *questionList, int nNumOfQues, int nLeaderboardSize, leaderBoardFormat *leaderboard)
+void 
+playGame(questionFormat *questionList, int nNumOfQues, leaderBoardFormat *roundsLB, leaderBoardFormat *accumulatedLB, int *nRoundsLBSize, int *nAccLBSize)
 {
     // declare and define variables
     string20 topics[nNumOfQues];
     string20 selectedTopic;
     time_t timeVar; 
-    int nCtrTopics = 0, nInput, nCorrectAnswer, nLastQuesNum = 0, nRandQuesInd, bIsfound = 0, nQuesIndex = 0; // reset variables
+    int nCtrTopics = 0, nInput, nCorrectAnswer, nLastQuesNum = 0, nRandQuesInd, bIsfound = 0, nQuesIndex = 0, accLBInd = -1; // reset variables
+
+    //reset isUsed member of all questions
+    for (int i = 0; i < nNumOfQues; i++)
+        questionList[i].isUsed = 0;
 
     // get seed from time
     srand(time(&timeVar));
-     if (nNumOfQues == 0)
+    if (nNumOfQues == 0)
     {
         printf("\n\t\t\t\t\t\tNo existing records to use in game!\n");
         printf("\n\t\t\t\t\t\tEnter 0 to return... ");
@@ -976,20 +1005,40 @@ playGame(questionFormat *questionList, int nNumOfQues, int nLeaderboardSize, lea
     }
     if (nInput != 0)
     {
+        
         // initialize score for this round as 0
-        leaderboard[nLeaderboardSize].score = 0;
+        roundsLB[*nRoundsLBSize].score = 0; 
 
         // create array of topics
         nCtrTopics = createArrayOfTopics(topics, questionList, nNumOfQues);
 
-        // ask for name
+        // ask for name and store it to the current leaderboard row
         printf("\n\t\t\t\t\t\tPlease enter your name: ");
-        scanf("%s", leaderboard[nLeaderboardSize].name); // get name and store it to the current leaderboard row
+        scanf("%s", roundsLB[*nRoundsLBSize].name); 
         
+
+        //get index of name in accumulated
+        for(int i = 0; i < *nAccLBSize; i++)
+        {
+            if (!strcmp(roundsLB[*nRoundsLBSize].name, accumulatedLB[i].name))
+                accLBInd = i;
+        }
+
+        /*if name not found in accumulated, start a new leaderboard record
+        Set index to accumulated leader board to size
+        Initialize score to 0*/
+        if (accLBInd == -1){
+            accLBInd = *nAccLBSize;
+            accumulatedLB[accLBInd].score = 0;
+            //increment accumulated leaderboard size
+            *nAccLBSize += 1;
+        }
+        strcpy(accumulatedLB[accLBInd].name, roundsLB[*nRoundsLBSize].name);
+    
         do
         {
+            //print top border
             system("CLS");
-             //print top border
             printHoriBorder();
             printTableLine("- SELECT A TOPIC - ");
         
@@ -997,130 +1046,124 @@ playGame(questionFormat *questionList, int nNumOfQues, int nLeaderboardSize, lea
             for (int i = 0; i < nCtrTopics; i++)
             {
                 printf("\n\t\t\t\t\t\t\t\t%d - %s\t\t\t\n", i + 1, topics[i]);
-
-                //print border
                 printHoriBorder();
             }
 
             // print score
-            printf("\n\t\t\t\t\t\t\t\tScore: %d\n", leaderboard[nLeaderboardSize].score);
+            printf("\n\t\t\t\t\t\t\t\tScore: %d\n", roundsLB[*nRoundsLBSize].score);
             printHoriBorder();
+            printTableLine("0 - End the Game ");
 
             // get input (for which topic) with validation
             printf("\n\t\t\t\t\t\tEnter a number: ");
-            nInput = getIntInput(1, nCtrTopics);
+            nInput = getIntInput(0, nCtrTopics);
             system("CLS");
 
-            /*by this time, hindi na 0 yung input
-            Note: minus 1 since index starts at 0, input starts at 1 lowest*/
-            strcpy(selectedTopic, topics[nInput - 1]);
-
-            //get last question num in that topic
-            nLastQuesNum = getLastQuesNum(questionList, nNumOfQues, selectedTopic);
-
-            // generate random odd value from 1 to last question num
-            int nRandomNum = rand() % (nLastQuesNum + 1);
-
-            // if random value generated happens to be 0, increment so it becomes 1 (a valid number)
-            if (nRandomNum == 0)
-                nRandomNum++;
-
-            // reset question list index and flag variable
-           nQuesIndex = 0;
-           bIsfound = 0;
-           /*
-           **array of indexes, with random index to this array
-           1. create array
-                num of elements = num of question numbers in topic
-                elements = 0 to num of elements-1
-            2. random number generated becomes index to the array of indices
-            3. every time u get a number, move down the elements 
-            4. subtract array size
-            5. if array of indices is finally empty, display alert. (all questions in this topic have been answered, reset array???)
-
-           
-            2. check if all used
-            if not:
-            1. random num for q num paren
-            2. check if used na
-            3. if yes try for another one
-            if all used in that topic: 
-            1. display message
-           */
-
-            // based on the index inputted, loop through array to get the corresponding question with the same topic ad the random num generated
-            while (!bIsfound)
+            //if user inputs a topic (does not end the game)
+            if (nInput > 0)
             {
-                /*if the current question in loop has same topic as the selected topic
-                and its question num is the same as the random number generated, then save its index for later use
-                - Set flag variable to 1 when found*/
-                if (!strcmp(questionList[nQuesIndex].topic, selectedTopic) && questionList[nQuesIndex].questionNum == nRandomNum)
-                {
-                    nRandQuesInd = nQuesIndex;
-                    bIsfound = 1;
+                /*by this time, input is no longer zero
+                Note: minus 1 since index starts at 0, input starts at 1 lowest*/
+                strcpy(selectedTopic, topics[nInput - 1]);
+
+                //get last question num in that topic
+                nLastQuesNum = getLastQuesNum(questionList, nNumOfQues, selectedTopic);
+
+                // reset question list index and flag variable
+                int quesInds[nLastQuesNum];
+                //size of array of indices
+                int nIndexArrSize = 0; 
+
+                //create an array of not yet used questions in the selected topic
+                //loop thru questionlist
+                for (int i = 0; i < nNumOfQues; i++){ 
+
+                    //everytime u hit a question with the same topic and has not been used, add its index to the array of indices
+                    if (!strcmp(questionList[i].topic, selectedTopic) && !questionList[i].isUsed) { 
+                        quesInds[nIndexArrSize] = i;
+                        nIndexArrSize++;
+                    }
+                } 
+
+                //if array of indices is empty, it means that all questions have been used, display message
+                if (nIndexArrSize == 0){
+                    system("CLS");
+                    printf("\n\t\t\t\t\t\tAll questions in this topic have been used!");
+                    printf("\n\t\t\t\t\t\tEnter 1 to return to topics... ");
+                    nInput = getIntInput(1, 1);            
                 }
-                // increment question list index with every loop
-                nQuesIndex++;
+               
+                if (nIndexArrSize != 0){
+                    
+                    //generate a random number to access an element in array of indices
+                    //nIndexArrSize = the size of array of indices
+                    int nRandomNum = rand() % (nIndexArrSize); 
+
+                    //use random num to access element from array of indices, set it to the question index to be used
+                    nRandQuesInd = quesInds[nRandomNum];
+
+                    // display question
+                    system("CLS");
+                    printHoriBorder();
+                    printTableLine("Your question is...");
+                    printf("\n\t\t\t\t\t\t%s\n", questionList[nRandQuesInd].question);
+                    printHoriBorder();
+
+                    // print choices, accept input
+                    printf("\n\t\t\t\t\t\t\t\t1 - %s\n", questionList[nRandQuesInd].choice1);
+                    printHoriBorder();
+                    printf("\n\t\t\t\t\t\t\t\t2 - %s\n", questionList[nRandQuesInd].choice2);
+                    printHoriBorder();
+                    printf("\n\t\t\t\t\t\t\t\t3 - %s\n", questionList[nRandQuesInd].choice3);
+                    printHoriBorder();
+                    printf("\n\t\t\t\t\t\t\t\tScore: %d\n", roundsLB[*nRoundsLBSize].score);
+                    printHoriBorder();
+                    printf("\n\t\t\t\t\t\tEnter a number (1-3): ");
+                    nInput = getIntInput(1, 3);
+                    system("CLS");
+
+                    // check which choice is supposed to be the right answer
+                    if (!strcmp(questionList[nRandQuesInd].choice1, questionList[nRandQuesInd].answer))
+                        nCorrectAnswer = 1;
+                    else if (!strcmp(questionList[nRandQuesInd].choice2, questionList[nRandQuesInd].answer))
+                        nCorrectAnswer = 2;
+                    else
+                        nCorrectAnswer = 3;
+
+                    // if input is the same as the correct answer
+                    if (nInput == nCorrectAnswer)
+                    {
+                        // 1. print
+                        printf("\n\t\t\t\t\t\tCorrect! (+5 pnts)");
+                        // 2. add score
+                        roundsLB[*nRoundsLBSize].score += 5;
+                        accumulatedLB[accLBInd].score += 5;
+                    }
+                    else
+                        printf("\n\t\t\t\t\t\tSorry! Wrong answer.");
+
+                    // print updated score, give user option to continue or end game
+                    printf("\n\n\t\t\t\t\t\tScore: %d\n\n\t\t\t\t\t\t0 - End game\n\t\t\t\t\t\t1 - Next question\n", roundsLB[*nRoundsLBSize].score);
+                    printf("\t\t\t\t\t\tEnter a number: ");
+                    nInput = getIntInput(0, 1);
+                }
+                    //update isUsed status
+                    questionList[nRandQuesInd].isUsed = 1;
+                    // loop until user does not choose to end game
             }
-
-            // display question
-            printHoriBorder();
-            printTableLine("Your question is...");
-            printf("\n\t\t\t\t\t\t%s\n", questionList[nRandQuesInd].question);
-            printHoriBorder();
-
-            // print choices, accept input
-            printf("\n\t\t\t\t\t\t\t\t1 - %s\n", questionList[nRandQuesInd].choice1);
-            printHoriBorder();
-            printf("\n\t\t\t\t\t\t\t\t2 - %s\n", questionList[nRandQuesInd].choice2);
-            printHoriBorder();
-            printf("\n\t\t\t\t\t\t\t\t3 - %s\n", questionList[nRandQuesInd].choice3);
-            printHoriBorder();
-            printf("\n\t\t\t\t\t\t\t\tScore: %d\n", leaderboard[nLeaderboardSize].score);
-            printHoriBorder();
-            printf("\n\t\t\t\t\t\tEnter a number (1-3): ");
-            nInput = getIntInput(1, 3);
-            system("CLS");
-
-            // check which choice is supposed to be the right answer
-            if (!strcmp(questionList[nRandQuesInd].choice1, questionList[nRandQuesInd].answer))
-                nCorrectAnswer = 1;
-            else if (!strcmp(questionList[nRandQuesInd].choice2, questionList[nRandQuesInd].answer))
-                nCorrectAnswer = 2;
-            else
-                nCorrectAnswer = 3;
-
-            // if input is the same as the correct answer
-            if (nInput == nCorrectAnswer)
-            {
-                // 1. print
-                printf("\n\t\t\t\t\t\tCorrect! (+5 pnts)");
-                // 2. add score
-                leaderboard[nLeaderboardSize].score += 5;
-            }
-            else
-                printf("\n\t\t\t\t\t\tSorry! Wrong answer.");
-
-            // print updated score, give user option to continue or end game
-            printf("\n\n\t\t\t\t\t\tScore: %d\n\n\t\t\t\t\t\t0 - End game\n\t\t\t\t\t\t1 - Next question\n", leaderboard[nLeaderboardSize].score);
-            printf("\t\t\t\t\t\tEnter a number: ");
-            nInput = getIntInput(0, 1);
-
-            // loop until user does not choose to end game
-        } while (nInput != 0);
+        } while (nInput != 0 );
 
         // after game ends
         system("CLS");
-        printf("\n\t\t\t\t\t\tCONGRATULATIONS, YOUR FINAL SCORE IS: %d\n\n", leaderboard[nLeaderboardSize].score);
+        printf("\n\t\t\t\t\t\tCONGRATULATIONS, \n\t\t\t\t\t\tYOUR FINAL SCORE FOR THIS ROUND IS: %d\n\n", roundsLB[*nRoundsLBSize].score);
         printf("\n\t\t\t\t\t\tEnter 0 to return... ");
         nInput = getIntInput(0,0);
         system("CLS");
 
-        // return incremented leaderboard size
-        nLeaderboardSize++;
+       //increment rounds leaderboard size
+       *nRoundsLBSize += 1;
     }
 
-    return nLeaderboardSize;
 }
 
 /*viewScores prints the leaderboard with player name and accumulated score from one round
@@ -1129,41 +1172,72 @@ playGame(questionFormat *questionList, int nNumOfQues, int nLeaderboardSize, lea
 Pre-condition: leaderboard must be populated or the function will only display message
 */
 void 
-viewScores(int nLeaderboardSize, leaderBoardFormat *leaderboard)
+viewScores( leaderBoardFormat *roundsLB, leaderBoardFormat *accumulatedLB, int nRoundsLBSize, int nAccLBSize)
 {
     int nInput, nMaxInd;
     leaderBoardFormat temp;
 
-    if (nLeaderboardSize == 0)
+    if (nRoundsLBSize == 0)
         printf ("\n\n\t\t\t\t\t\tNo existing entries to display!\n\n");
 
     else{
 
-        //sort scores
-        for(int i = 0; i < nLeaderboardSize-1; i++)
+        //SORT ROUND SCORES LEADERBOARD
+        for(int i = 0; i < nRoundsLBSize-1; i++)
         {
             nMaxInd = i;
-            for(int j = i+1 ; j < nLeaderboardSize; j++)
+            for(int j = i+1 ; j < nRoundsLBSize; j++)
             {
-                if (leaderboard[nMaxInd].score < leaderboard[j].score)
+                if (roundsLB[nMaxInd].score < roundsLB[j].score)
                 nMaxInd = j;
             }
             if(nMaxInd != i)
             {
-                temp = leaderboard[i];
-                leaderboard[i] = leaderboard[nMaxInd];
-                leaderboard[nMaxInd] = temp;
+                temp = roundsLB[i];
+                roundsLB[i] = roundsLB[nMaxInd];
+                roundsLB[nMaxInd] = temp;
             }
         }
-        //print header
+
+        //SORT ACCUMULATED LEADERBOARD SCORES
+        for(int i = 0; i < nAccLBSize-1; i++)
+        {
+            nMaxInd = i;
+            for(int j = i+1 ; j < nAccLBSize; j++)
+            {
+                if (accumulatedLB[nMaxInd].score < accumulatedLB[j].score)
+                nMaxInd = j;
+            }
+            if(nMaxInd != i)
+            {
+                temp = accumulatedLB[i];
+                accumulatedLB[i] = accumulatedLB[nMaxInd];
+                accumulatedLB[nMaxInd] = temp;
+            }
+        }
+
+        //PRINT ACCUMULAATED SCORES
+        printHoriBorder();
+        printf("\n\t\t\t\t\t\t|\t    - ACCUMULATED SCORES -\t\t|\n");
         printHoriBorder();
         printf("\n\t\t\t\t\t\t\tRow\tPlayer Name\tScore\n");
         printHoriBorder();
-
-        //print name and scores
-        for(int i = 0; i < nLeaderboardSize; i++)
+        for(int i = 0; i < nAccLBSize; i++)
         {
-            printf("\n\t\t\t\t\t\t\t%d%17s\t%d\n", i+1, leaderboard[i].name, leaderboard[i].score );
+            printf("\n\t\t\t\t\t\t\t%d%17s\t%d\n", i+1, accumulatedLB[i].name, accumulatedLB[i].score );
+            printHoriBorder();
+        }   
+        printf("\n\n");
+
+
+        //PRINT ROUND SCORES
+        printHoriBorder();
+        printTableLine("- ROUND SCORES - ");
+        printf("\n\t\t\t\t\t\t\tRow\tPlayer Name\tScore\n");
+        printHoriBorder();
+        for(int i = 0; i < nRoundsLBSize; i++)
+        {
+            printf("\n\t\t\t\t\t\t\t%d%17s\t%d\n", i+1, roundsLB[i].name, roundsLB[i].score );
             printHoriBorder();
         }   
     }
@@ -1275,7 +1349,7 @@ manageFunc(string30 password, questionFormat *questionList, int *nNumOfQues)
 Pre-condition: all values passed to parameters must be valid
 */
 void 
-playFunc ( questionFormat *questionList, int nNumOfQues, int *nLeaderboardSize, leaderBoardFormat *leaderBoard)
+playFunc ( questionFormat *questionList, int nNumOfQues,  leaderBoardFormat *roundsLB, leaderBoardFormat *accumulatedLB, int *nRoundsLBSize, int *nAccLBSize)
 {
 
     //declare varibales
@@ -1288,10 +1362,10 @@ playFunc ( questionFormat *questionList, int nNumOfQues, int *nLeaderboardSize, 
         //open scores file
         fp = fopen("scores.txt", "w");
    
-        //update leaderboard everytime play is clicked from main menu
-        for (int i = 0; i < *nLeaderboardSize; i++){
-            fprintf(fp, "%s\n", leaderBoard[i].name);
-            fprintf(fp, "%d\n\n", leaderBoard[i].score);       
+        //update leaderboard everytime player returns to play menu
+        for (int i = 0; i < *nAccLBSize; i++){
+            fprintf(fp, "%s\n", accumulatedLB[i].name);
+            fprintf(fp, "%d\n\n", accumulatedLB[i].score);       
         }
         fclose(fp);
 
@@ -1312,9 +1386,9 @@ playFunc ( questionFormat *questionList, int nNumOfQues, int *nLeaderboardSize, 
        //based on user input, open next menu 
         switch (nInput)
         {
-            case 1: *nLeaderboardSize = playGame(questionList, nNumOfQues, *nLeaderboardSize, leaderBoard); 
+            case 1: playGame(questionList, nNumOfQues, roundsLB, accumulatedLB, nRoundsLBSize, nAccLBSize); 
                     break;
-            case 2: viewScores(*nLeaderboardSize, leaderBoard); 
+            case 2: viewScores(roundsLB, accumulatedLB, *nRoundsLBSize, *nAccLBSize); 
                     break;
             case 3: break;
         }
