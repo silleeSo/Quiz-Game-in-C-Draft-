@@ -48,6 +48,8 @@ void
 getPasswordInput(string30 strInput);
 int 
 getLastQuesNum(questionFormat *questionList, int nNumOfQues, string20 selectedTopic);
+void 
+overwriteRecord(questionFormat *questionList, int nNumOfQues, int nSelectedIndex); 
 
 //2. FUNCTIONS CALLED IN manageFunc()
 int 
@@ -66,9 +68,20 @@ void
 playGame(questionFormat *questionList, int nNumOfQues, leaderBoardFormat *roundsLB, leaderBoardFormat *accumulatedLB, int *nRoundsLBSize, int *nAccLBSize);
 void 
 viewScores( leaderBoardFormat *roundsLB, leaderBoardFormat *accumulatedLB, int nRoundsLBSize, int nAccLBSize);
+
+//4. FUNCTIONS CALLED IN MAIN
 void 
 manageFunc(string30 password, questionFormat *questionList, int *nNumOfQues);
 void
 playFunc (questionFormat *questionList, int nNumOfQues,  leaderBoardFormat *roundsLB, leaderBoardFormat *accumulatedLB, int *roundsLBSize, int *accLBSize);
+
+
+//5. PRINT FUNCTIONS
+void 
+printEditMessage ();
+void 
+printHoriBorder();
+void 
+printTableLine(char *strToPrint);
 void 
 printMainMenu();

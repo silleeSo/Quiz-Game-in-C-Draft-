@@ -300,7 +300,7 @@ getPasswordInput(string30 strInput)
         }
 
         // in case user presses backspace
-        else if (nPassInd >= 0 && cInput == '\b')
+        else if (nPassInd > 0 && cInput == '\b')
         {
             // substract password index so that next character input overwrites
             nPassInd--;
@@ -1067,7 +1067,7 @@ playGame(questionFormat *questionList, int nNumOfQues, leaderBoardFormat *rounds
     string20 topics[nNumOfQues];
     string20 selectedTopic;
     time_t timeVar; 
-    int nCtrTopics = 0, nInput = 1, nCorrectAnswer, nLastQuesNum = 0, nRandQuesInd, accLBInd = -1; // reset variables
+    int nCtrTopics = 0, nInput = 1, nCorrectAnswer, nLastQuesNum = 0, nRandQuesInd,  accLBInd = -1; // reset variables
 
     //reset isUsed member of all questions
     for (int i = 0; i < nNumOfQues; i++)

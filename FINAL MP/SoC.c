@@ -6,7 +6,7 @@ otherwise plagiarized the work of other students and/or persons.
 Chrysille Grace So, DLSU ID# 12209589
 *********************************************************************************************************/
 
-#include "functions.c"
+#include "SoC_functions.c"
 
 int main()
 {
@@ -15,8 +15,11 @@ int main()
     questionFormat questionList[SIZE];
     leaderBoardFormat roundsLB[SIZE]; 
     leaderBoardFormat accumulatedLB[SIZE];
-    string30 password = "china";
-    int nQuesListSize = 0, nMenuChoice = 0, nRoundsLBSize = 0, nAccLBSize = 0;
+    string30 password = "Admin123";
+    int nQuesListSize=0, 
+    nMenuChoice = 0, 
+    nRoundsLBSize = 0, 
+    nAccLBSize;
 
     
 

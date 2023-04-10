@@ -57,16 +57,22 @@ Pre-condition: newly edited question must be part of questionList and nSelectedI
 int 
 checkIfQuesExists(questionFormat *questionList, int nNumOfQues, int nSelectedIndex)
 {
-    int bQuesExists = 0;
-    for (int i = 0; i < nNumOfQues; i++)
-
+	int i;
+    int bQuesExists = 0, bSameQuestion, bNotSelected, bSameAnswer;
+    for (i = 0; i < nNumOfQues; i++)
+    {
         /*1. the selected question is the same as some question 
           2. the answer of the selected question is the same as well
           3. they do not have the same index*/
-        if (!strcmp(questionList[i].question, questionList[nSelectedIndex].question) && i != nSelectedIndex && !strcmp(questionList[i].answer, questionList[nSelectedIndex].answer))
+        bSameQuestion = (!strcmp(questionList[i].question, questionList[nSelectedIndex].question));
+        bSameAnswer = (!strcmp(questionList[i].answer, questionList[nSelectedIndex].answer));
+        bNotSelected = (i != nSelectedIndex);
+
+        if (bSameQuestion && bSameAnswer && bNotSelected)
             bQuesExists = 1;
-                    
-    if (bQuesExists){
+    }
+    if (bQuesExists)
+	{
         system("CLS");
         printf("\n\n\t\t\t\t\t\tQuestion already exists! Please try again... ");
     }
@@ -105,7 +111,8 @@ Pre-condition: nLowerBound and nUpperBound are both defined before this function
 int 
 getIntInput(int nLowerBound, int nUpperBound)
 {
-    int character, nInput;
+    int character;
+	int nInput;
 
     scanf("%d", &nInput);
     while ((int)nInput < nLowerBound || (int)nInput > nUpperBound)
@@ -131,8 +138,11 @@ editChoice( char* strChoiceName, int nSelectedIndex, questionFormat *questionLis
 {
     
     // declare variable for user input
-    int nInput, bQuesExists = 1;
-    string30 altChoice1, altChoice2;
+    int i;
+    int nInput;
+	int bQuesExists = 1;
+    string30 altChoice1;
+	string30 altChoice2;
     char *strChoice;
 
     system("CLS");
@@ -183,7 +193,7 @@ editChoice( char* strChoiceName, int nSelectedIndex, questionFormat *questionLis
             {
                 //check if q&a pair already exists
                 bQuesExists = 0;
-                for (int i = 0; i < nNumOfQues; i++)
+                for (i = 0; i < nNumOfQues; i++)
                     if (!strcmp(questionList[i].question, questionList[nSelectedIndex].question) && i != nSelectedIndex && !strcmp(questionList[i].answer, strChoice))
                         bQuesExists = 1;
                if (bQuesExists)
@@ -243,15 +253,18 @@ Pre-condition: question list must be populated
 int 
 createArrayOfTopics(string20 *topics, questionFormat *questionList, int nNumOfQues)
 {
+	int i;
+	int j;
     // reset variables
-    int nCtrTopics = 0, bQuesExists = 0;
+    int nCtrTopics = 0;
+	int bQuesExists = 0;
 
     // CREATE AN ARRAY OF EXISTING TOPICS:
     // loop through array of questions
-    for (int i = 0; i < nNumOfQues; i++)
+    for (i = 0; i < nNumOfQues; i++)
     {
         // loop through array of existing topics
-        for (int j = 0; j < nCtrTopics; j++)
+        for (j = 0; j < nCtrTopics; j++)
 
             // check if the topic current question in loop already exists in the array of topics
             if (!strcmp(questionList[i].topic, topics[j]))
@@ -300,7 +313,7 @@ getPasswordInput(string30 strInput)
         }
 
         // in case user presses backspace
-        else if (nPassInd >= 0 && cInput == '\b')
+        else if (nPassInd > 0 && cInput == '\b')
         {
             // substract password index so that next character input overwrites
             nPassInd--;
@@ -328,10 +341,11 @@ Pre-condition: question list must be populated, or it will return 0
 int 
 getLastQuesNum(questionFormat *questionList, int nNumOfQues, string20 selectedTopic)
 {
+	int i;
     int nLastQuesNum = 0;
 
     // loop through the array of structs (questions/records)
-    for (int i = 0; i < nNumOfQues; i++) 
+    for (i = 0; i < nNumOfQues; i++) 
 
         /*if the current question in loop has the same topic (as the added question) and a higher question number
         Note: nNumOfQues = index of the newly addded question*/
@@ -352,13 +366,14 @@ Pre-condition: all parameters need to be accurate or errors might occur
 void 
 overwriteRecord(questionFormat *questionList, int nNumOfQues, int nSelectedIndex) 
 {
+	int i;
     int nPrevQuesNum;
      /*Move question numbers to the next question
     Initialize Previous question number to the question number of selected question */
     nPrevQuesNum = questionList[nSelectedIndex].questionNum;
 
     // loop through question array starting from the question after the selected questioon
-    for (int i = nSelectedIndex + 1; i < nNumOfQues; i++)
+    for (i = nSelectedIndex + 1; i < nNumOfQues; i++)
     {
         // if the topic of the selected question is equal to the topic of the current question in loop
         if (!strcmp(questionList[nSelectedIndex].topic, questionList[i].topic))
@@ -371,7 +386,7 @@ overwriteRecord(questionFormat *questionList, int nNumOfQues, int nSelectedIndex
     }
 
         // overwrite the selected question struct by copying next question in the topic TO the current question in the same topic
-    for (int i = nSelectedIndex; i < nNumOfQues; i++)
+    for (i = nSelectedIndex; i < nNumOfQues; i++)
         questionList[i] = questionList[i + 1];
 }
 /*printEditMessage prints message after successful record edit
@@ -395,17 +410,20 @@ printEditMessage ()
 /*printHoriBorder prints a horizontal border (50 characters long)
 Pre-condition: must be used in a table display
 */
-void printHoriBorder()
+void 
+printHoriBorder()
 {
+	int i;
     printf("\t\t\t\t\t\t");
-    for(int i = 1; i < 50; i++)
+    for(i = 1; i < 50; i++)
         printf("-");
 }
 
 /*printTableLine prints a table row with text
 Pre-condition: text must be at leadt 17 characters for proper alignment
 */
-void printTableLine(char *strToPrint)
+void 
+printTableLine(char *strToPrint)
 {
     printf ("\n\t\t\t\t\t\t|\t\t%s\t\t|\n", strToPrint);
     printHoriBorder();
@@ -426,7 +444,12 @@ addRecord(questionFormat *questionList, int nNumOfQues)
     string150 question;
     string30 answer;
     string20 questionTopic;
-    int bExists, nInput, nLastQuesNum = 0, bAnsIsInChoices = 0, bIsDuplicate = 0;
+    int i;
+    int bExists;
+	int nInput;
+	int nLastQuesNum = 0;
+	int bAnsIsInChoices = 0;
+	int bIsDuplicate = 0;
 
     do
     {
@@ -441,7 +464,7 @@ addRecord(questionFormat *questionList, int nNumOfQues)
         getStrInput(answer, 30);
 
         // loop thru all elements and check if question and answered from user input already exists in array of questions
-        for (int i = 0; i < nNumOfQues; i++)
+        for (i = 0; i < nNumOfQues; i++)
         {
             if (!strcmp(questionList[i].question, question) && !strcmp(questionList[i].answer, answer))
                 bExists = 1;
@@ -551,7 +574,11 @@ importData(questionFormat *questionList, int nNumOfQues)
     string30 fileName;
     string20 questionTopic;
     FILE *filePointer;
-    int nPosition = 0, strInd = 0, nArrayInd = nNumOfQues, nInput = 1; // CHANGE ARRAY INDEX N SET TO S IF EVER MAM SAYS NA NEED LANG APPEND, NOT REWRITE
+    int i;
+    int nPosition = 0;
+	int strInd = 0; 
+	int nArrayInd = nNumOfQues;
+	int nInput = 1; // CHANGE ARRAY INDEX N SET TO S IF EVER MAM SAYS NA NEED LANG APPEND, NOT REWRITE
     char cCurrentChar;
 
     // ask for filename and validate
@@ -659,7 +686,7 @@ importData(questionFormat *questionList, int nNumOfQues)
     }
 
     //initialize all isUsed to 0
-    for(int i = 0; i < nArrayInd; i++)
+    for(i = 0; i < nArrayInd; i++)
         questionList[i].isUsed = 0;
     
     // return new array size
@@ -676,7 +703,10 @@ Pre-condition: questionList must be populated or nothing will be exported
 void 
 exportData(questionFormat *questionList, int nNumOfQues)
 {
-    int nInput, i, j, nNumOfTopics;
+    int nInput;
+	int i;
+	int j;
+	int nNumOfTopics;
     // declare variables
     string30 strFileName;
     string20 arrayOfTopics[nNumOfQues];
@@ -686,8 +716,8 @@ exportData(questionFormat *questionList, int nNumOfQues)
         printf("\n\t\t\t\t\t\tNo existing records to export!\n");
         printf("\n\t\t\t\t\t\tEnter 0 to return... ");
         scanf("%d", &nInput);
-        while (nInput != 0) {
-            
+        while (nInput != 0) 
+		{    
             system("CLS");
             printf("\n\t\t\t\t\t\tInvalid input, please enter 0: ");
             scanf("%d", &nInput);
@@ -705,8 +735,10 @@ exportData(questionFormat *questionList, int nNumOfQues)
 
         //first create an array of topics
         nNumOfTopics = createArrayOfTopics(arrayOfTopics, questionList, nNumOfQues);
-        for (i = 0; i < nNumOfTopics; i++){
-            for (j = 0; j < nNumOfQues; j++){
+        for (i = 0; i < nNumOfTopics; i++)
+		{
+            for (j = 0; j < nNumOfQues; j++)
+			{
                 if (!strcmp(questionList[j].topic, arrayOfTopics[i]))
                 {
                     // print out each question (struct) member in this order:
@@ -726,8 +758,8 @@ exportData(questionFormat *questionList, int nNumOfQues)
         printf("\n\t\t\t\t\t\tData exported successfully!\n");
         printf("\n\t\t\t\t\t\tEnter 0 to return... ");
         scanf("%d", &nInput);
-        while (nInput != 0) {
-            
+        while (nInput != 0) 
+		{
             system("CLS");
             printf("\n\t\t\t\t\t\tInvalid input, please enter 0: ");
             scanf("%d", &nInput);
@@ -747,8 +779,17 @@ editRecord(questionFormat *questionList, int nNumOfQues)
     // create array of topics
     string20 topics[nNumOfQues];
     string20 selectedTopic;
-    string30 choice1, choice2, choice3;                                                           // index of the selected question in the array
-    int ctrTopics, nInput = 1, nSelectedIndex, nLoopCtr = 0, nMinInput = 1, nHighestQuesNum, bQuesExists = 1; // counter for topics array
+    string30 choice1;
+	string30 choice2;
+	string30 choice3;                                                           // index of the selected question in the array
+	int i;
+    int ctrTopics;
+	int nInput = 1;
+	int nSelectedIndex;
+	int nLoopCtr = 0;
+	int nMinInput = 1;
+	int nHighestQuesNum;
+	int bQuesExists = 1; // counter for topics array
 
     system("CLS");
     // if there are no existing records yet for the user to edit, display notifying message and set nInput to zero - meaning go back to menu
@@ -808,7 +849,7 @@ editRecord(questionFormat *questionList, int nNumOfQues)
 
             // display questions for the selected topic
             printf("\n\n\n\t\t\t\t\t\tEnter a question number: \n");
-            for (int i = 0; i < nNumOfQues; i++)
+            for (i = 0; i < nNumOfQues; i++)
             {
                 // check if the selected topic is the same as the topic of the current question in loop
                 if (!strcmp(questionList[i].topic, selectedTopic))
@@ -945,7 +986,11 @@ deleteRecord(questionFormat *questionList, int nNumOfQues)
     string20 topics[nNumOfQues];
     string20 selectedTopic; // index of the selected question in the array
                             // counter for topics array
-    int ctrTopics, nInput = 1, nSelectedIndex, nHighestQuesNum;
+    int i;
+    int ctrTopics;
+	int nInput = 1;
+	int nSelectedIndex;
+	int nHighestQuesNum;
 
     if (nNumOfQues == 0)
     {
@@ -993,7 +1038,7 @@ deleteRecord(questionFormat *questionList, int nNumOfQues)
 
             // display questions from the selected topic and get highest question number
             printf("\n\n\n\t\t\t\t\t\tEnter a question number: \n");
-            for (int i = 0; i < nNumOfQues; i++)
+            for (i = 0; i < nNumOfQues; i++)
             {
                 // check if the selected topic is the same as the topic of the current question in loop
                 if (!strcmp(questionList[i].topic, selectedTopic))
@@ -1009,9 +1054,11 @@ deleteRecord(questionFormat *questionList, int nNumOfQues)
             while the question number of the current question in loop is not the same as the selected question number
             OR while the topic of the currrent question in loop is not the same as selected topic
             increment nSelectedIndex*/
-            while (questionList[nSelectedIndex].questionNum != nInput || strcmp(questionList[nSelectedIndex].topic, selectedTopic) != 0) // take question index in 1d array
+            while (questionList[nSelectedIndex].questionNum != nInput 
+				   || strcmp(questionList[nSelectedIndex].topic, selectedTopic) != 0) // take question index in 1d array
                 nSelectedIndex++;
-            system("CLS");
+            
+			system("CLS");
             // at this point, nInput is still = ques num
             printf("\n\t\t\t\t\t\tAre you sure you want to delete question number %d of %s?\n\t\t\t\t\t\t0 - No\n\t\t\t\t\t\t1 - Yes", nInput, selectedTopic);
             printf("\n\n\n\t\t\t\t\t\tEnter a number: ");
@@ -1067,10 +1114,16 @@ playGame(questionFormat *questionList, int nNumOfQues, leaderBoardFormat *rounds
     string20 topics[nNumOfQues];
     string20 selectedTopic;
     time_t timeVar; 
-    int nCtrTopics = 0, nInput = 1, nCorrectAnswer, nLastQuesNum = 0, nRandQuesInd, accLBInd = -1; // reset variables
+    int i;
+    int nCtrTopics = 0;
+	int nInput = 1;
+	int nCorrectAnswer;
+	int nLastQuesNum = 0;
+	int nRandQuesInd;
+	int accLBInd = -1; // reset variables
 
     //reset isUsed member of all questions
-    for (int i = 0; i < nNumOfQues; i++)
+    for (i = 0; i < nNumOfQues; i++)
         questionList[i].isUsed = 0;
 
     // get seed from time
@@ -1097,7 +1150,7 @@ playGame(questionFormat *questionList, int nNumOfQues, leaderBoardFormat *rounds
         
 
         //get index of name in accumulated
-        for(int i = 0; i < *nAccLBSize; i++)
+        for(i = 0; i < *nAccLBSize; i++)
         {
             if (!strcmp(roundsLB[*nRoundsLBSize].name, accumulatedLB[i].name))
                 accLBInd = i;
@@ -1106,7 +1159,8 @@ playGame(questionFormat *questionList, int nNumOfQues, leaderBoardFormat *rounds
         /*if name not found in accumulated, start a new leaderboard record
         Set index to accumulated leader board to size
         Initialize score to 0*/
-        if (accLBInd == -1){
+        if (accLBInd == -1)
+		{
             accLBInd = *nAccLBSize;
             accumulatedLB[accLBInd].score = 0;
             //increment accumulated leaderboard size
@@ -1122,7 +1176,7 @@ playGame(questionFormat *questionList, int nNumOfQues, leaderBoardFormat *rounds
             printTableLine("- SELECT A TOPIC - ");
         
             // display topics
-            for (int i = 0; i < nCtrTopics; i++)
+            for (i = 0; i < nCtrTopics; i++)
             {
                 printf("\n\t\t\t\t\t\t\t\t%d - %s\t\t\t\n", i + 1, topics[i]);
                 printHoriBorder();
@@ -1155,10 +1209,11 @@ playGame(questionFormat *questionList, int nNumOfQues, leaderBoardFormat *rounds
 
                 //create an array of not yet used questions in the selected topic
                 //loop thru questionlist
-                for (int i = 0; i < nNumOfQues; i++){ 
-
+                for (i = 0; i < nNumOfQues; i++)
+				{ 
                     //everytime u hit a question with the same topic and has not been used, add its index to the array of indices
-                    if (!strcmp(questionList[i].topic, selectedTopic) && !questionList[i].isUsed) { 
+                    if (!strcmp(questionList[i].topic, selectedTopic) && !questionList[i].isUsed)
+					{ 
                         quesInds[nIndexArrSize] = i;
                         nIndexArrSize++;
                     }
@@ -1253,19 +1308,23 @@ Pre-condition: leaderboard must be populated or the function will only display m
 void 
 viewScores( leaderBoardFormat *roundsLB, leaderBoardFormat *accumulatedLB, int nRoundsLBSize, int nAccLBSize)
 {
-    int nInput, nMaxInd;
+	int i;
+	int j;
+    int nInput;
+	int nMaxInd;
     leaderBoardFormat temp;
 
     if (nRoundsLBSize == 0)
         printf ("\n\n\t\t\t\t\t\tNo existing entries to display!\n\n");
 
-    else{
+    else
+	{
 
         //SORT ROUND SCORES LEADERBOARD
-        for(int i = 0; i < nRoundsLBSize-1; i++)
+        for(i = 0; i < nRoundsLBSize-1; i++)
         {
             nMaxInd = i;
-            for(int j = i+1 ; j < nRoundsLBSize; j++)
+            for(j = i+1 ; j < nRoundsLBSize; j++)
             {
                 if (roundsLB[nMaxInd].score < roundsLB[j].score)
                 nMaxInd = j;
@@ -1279,10 +1338,10 @@ viewScores( leaderBoardFormat *roundsLB, leaderBoardFormat *accumulatedLB, int n
         }
 
         //SORT ACCUMULATED LEADERBOARD SCORES
-        for(int i = 0; i < nAccLBSize-1; i++)
+        for(i = 0; i < nAccLBSize-1; i++)
         {
             nMaxInd = i;
-            for(int j = i+1 ; j < nAccLBSize; j++)
+            for(j = i+1 ; j < nAccLBSize; j++)
             {
                 if (accumulatedLB[nMaxInd].score < accumulatedLB[j].score)
                 nMaxInd = j;
@@ -1301,7 +1360,7 @@ viewScores( leaderBoardFormat *roundsLB, leaderBoardFormat *accumulatedLB, int n
         printHoriBorder();
         printf("\n\t\t\t\t\t\t\tRow\tPlayer Name\tScore\n");
         printHoriBorder();
-        for(int i = 0; i < nAccLBSize; i++)
+        for(i = 0; i < nAccLBSize; i++)
         {
             printf("\n\t\t\t\t\t\t\t%d%17s\t%d\n", i+1, accumulatedLB[i].name, accumulatedLB[i].score );
             printHoriBorder();
@@ -1314,7 +1373,7 @@ viewScores( leaderBoardFormat *roundsLB, leaderBoardFormat *accumulatedLB, int n
         printTableLine("- ROUND SCORES - ");
         printf("\n\t\t\t\t\t\t\tRow\tPlayer Name\tScore\n");
         printHoriBorder();
-        for(int i = 0; i < nRoundsLBSize; i++)
+        for(i = 0; i < nRoundsLBSize; i++)
         {
             printf("\n\t\t\t\t\t\t\t%d%17s\t%d\n", i+1, roundsLB[i].name, roundsLB[i].score );
             printHoriBorder();
@@ -1345,6 +1404,7 @@ void
 manageFunc(string30 password, questionFormat *questionList, int *nNumOfQues)
 {
     // declare variables
+    int i;
     string30 strInput;
     int nInput = 1;
 
@@ -1381,7 +1441,7 @@ manageFunc(string30 password, questionFormat *questionList, int *nNumOfQues)
             display menu list*/
             system("CLS");
             printf("\t\t\t\t\t\t");
-            for(int i = 1; i < 50; i++)
+            for(i = 1; i < 50; i++)
                 printf("-");
             printTableLine("MANAGE DATA MENU");
             //printf("\n\nMANAGE DATA MENU\n");
@@ -1432,6 +1492,7 @@ playFunc ( questionFormat *questionList, int nNumOfQues,  leaderBoardFormat *rou
 {
 
     //declare varibales
+    int i;
     FILE *fp;
     int nInput;
     
@@ -1442,7 +1503,8 @@ playFunc ( questionFormat *questionList, int nNumOfQues,  leaderBoardFormat *rou
         fp = fopen("scores.txt", "w");
    
         //update leaderboard everytime player returns to play menu
-        for (int i = 0; i < *nAccLBSize; i++){
+        for (i = 0; i < *nAccLBSize; i++)
+		{
             fprintf(fp, "%s\n", accumulatedLB[i].name);
             fprintf(fp, "%d\n\n", accumulatedLB[i].score);       
         }
@@ -1481,9 +1543,11 @@ playFunc ( questionFormat *questionList, int nNumOfQues,  leaderBoardFormat *rou
 Pre-condition: must only be called in main menu
 */
 
-void printMainMenu(){
+void printMainMenu()
+{
+	int i;
     printf("\t\t\t\t\t\t");
-    for(int i = 1; i < 50; i++)
+    for(i = 1; i < 50; i++)
         printf("-");
    
     printTableLine("- QUIZ GAME -     ");

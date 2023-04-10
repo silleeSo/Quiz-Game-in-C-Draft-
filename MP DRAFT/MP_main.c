@@ -15,8 +15,8 @@ int main()
     questionFormat questionList[SIZE];
     leaderBoardFormat roundsLB[SIZE]; 
     leaderBoardFormat accumulatedLB[SIZE];
-    string30 password = "china";
-    int nQuesListSize = 0, nMenuChoice = 0, nRoundsLBSize = 0, nAccLBSize = 0;
+    string30 password = "Prog Pasado";
+    int nQuesListSize=0, nMenuChoice = 0, nRoundsLBSize = 0, nAccLBSize;
 
     
 
